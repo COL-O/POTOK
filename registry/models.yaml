@@ -1,0 +1,140 @@
+# POTOK — машиночитаемый реестр моделей (стартовая редакция)
+# Статус: draft / awaiting-project-brief (пояснение проекта ещё не поступило)
+# Человекочитаемая версия: docs/registry/models-55.md
+
+meta:
+  declared_total: 55        # как заявлено в исходнике
+  entries_count: 56         # фактическое число строк-позиций в таблицах органов (см. review-01)
+  organs_count: 7
+  layers: [front, polygon, growth, stratos]
+  status: draft-awaiting-project-brief
+  implementation_started: false
+
+layers:
+  front:   { meaning: "Рефлекс",   timescale: "наносекунды–миллисекунды" }
+  polygon: { meaning: "Иммунитет", timescale: "минуты–часы" }
+  growth:  { meaning: "Рост",      timescale: "часы–дни" }
+  stratos: { meaning: "Память",    timescale: "годы–века" }
+
+organs:
+  - id: organ-1
+    name: "Автономный транспорт и навигация"
+    alias: "Автопилот и Лоция"
+    layers_hint: [front, growth]
+    models:
+      - { id: uniad,            name: "UniAD",                          layer: growth,  role: "Сквозное планирование (глобально)" }
+      - { id: vad,              name: "VAD",                            layer: front,   role: "Векторное восприятие (локально)" }
+      - { id: hydra-mdp,        name: "Hydra-MDP",                      layer: front,   role: "Мульти-голова (выбор траектории)" }
+      - { id: diffusion-drive,  name: "DiffusionDrive", aliases: ["Diffusion Policy"], layer: growth, role: "Генерация траекторий (развилки)" }
+      - { id: drive-lm,         name: "DriveLM", aliases: ["EMMA"],     layer: polygon, role: "Пространственное рассуждение" }
+      - { id: occupancy-networks, name: "Occupancy Networks",           layer: front,   role: "3D-карта занятости" }
+      - { id: rrt,              name: "RRT", aliases: ["Informed RRT*"], layer: front,  role: "Быстрая навигация (склад)" }
+      - { id: hybrid-a-star,    name: "Hybrid A*",                      layer: front,   role: "Поиск пути с физикой шасси" }
+      - { id: teb,              name: "TEB (Timed Elastic Band)",       layer: front,   role: "Локальный объезд" }
+      - { id: orca,             name: "ORCA", aliases: ["RVO2"],        layer: front,   role: "Коллективная навигация (рои)" }
+
+  - id: organ-2
+    name: "Узнавание ситуаций и логические переключатели"
+    alias: "Радар и Засов"
+    layers_hint: [front, stratos]
+    models:
+      - { id: hdc,              name: "HDC / VSA",                      layer: front,   role: "Узнавание ситуации (наносекунды)" }
+      - { id: tsetlin-machine,  name: "Tsetlin Machine",                layer: front,   role: "Жёсткие переключатели" }
+      - { id: matrix-profile,   name: "Matrix Profile",                 layer: polygon, role: "Аномалии в потоке" }
+      - { id: lsh-hnsw,         name: "LSH + HNSW",                     layer: stratos, role: "Поиск прецедентов (recall)" }
+      - { id: snn,              name: "SNN (Spiking Neural Networks)",  layer: front,   role: "Реакция на редкие события" }
+
+  - id: organ-3
+    name: "Навигация по карте веток и объезд"
+    alias: "Лоцман и Стрелочник"
+    layers_hint: [front, polygon, growth]
+    models:
+      - { id: d-star-lite,      name: "D* Lite",                        layer: front,   role: "Обход завала (локально)" }
+      - { id: cbs,              name: "CBS (Conflict-Based Search)",    layer: polygon, role: "Конфликты ресурсов" }
+      - { id: mcts,             name: "MCTS",                           layer: growth,  role: "Разведка веток" }
+      - { id: bellman-a-star,   name: "Беллман / A*",                    layer: front,   role: "Кратчайший путь (статический)" }
+      - { id: mpnn,             name: "MPNN (Message Passing NN)",      layer: growth,  role: "Передача сигналов по графу" }
+      - { id: tgn,              name: "TGN (Temporal Graph Networks)",  layer: polygon, role: "Прогноз узких мест" }
+      - { id: graphsage,        name: "GraphSAGE",                      layer: growth,  role: "Оценка новых узлов" }
+      - { id: gatv2,            name: "GATv2 (Graph Attention)",        layer: polygon, role: "Динамические веса связей" }
+      - { id: neural-logic-machines, name: "Neural Logic Machines (NLM)", layer: polygon, role: "Логические правила на графах" }
+      - { id: deepproblog,      name: "DeepProbLog", aliases: ["Scallop"], layer: polygon, role: "Нейро-логика (жёсткие правила)" }
+
+  - id: organ-4
+    name: "Поиск формул и самообновление рецептов"
+    alias: "Инженерный отдел"
+    layers_hint: [growth, stratos]
+    models:
+      - { id: kan-2,            name: "KAN 2.0",                        layer: growth,  role: "Формула из таблиц" }
+      - { id: fastkan,          name: "FastKAN", aliases: ["FasterKAN"], layer: growth, role: "Ускоренная формула" }
+      - { id: lut-kan,          name: "LUT-KAN",                        layer: growth,  role: "Формула в таблицах поиска", note: "в комментарии исходника также упомянут для front при простой формуле" }
+      - { id: fourierkan,       name: "FourierKAN",                     layer: growth,  role: "Циклы, сезонность" }
+      - { id: chebykan,         name: "ChebyKAN",                       layer: growth,  role: "Точное приближение" }
+      - { id: wav-kan,          name: "Wav-KAN",                        layer: polygon, role: "Резкие скачки, удары" }
+      - { id: sindy,            name: "SINDy",                          layer: growth,  role: "Дифференциальные уравнения" }
+      - { id: pysr,             name: "PySR",                           layer: growth,  role: "Эволюционный поиск формул" }
+      - { id: symbolnet,        name: "SymbolNet",                      layer: growth,  role: "Символьная регрессия (поток)" }
+
+  - id: organ-5
+    name: "Плавная регулировка и удержание баланса"
+    alias: "Спинной мозг и Рулевой"
+    layers_hint: [front, polygon]
+    models:
+      - { id: cfc,              name: "CfC (Closed-form Continuous-time)", layer: front, role: "Плавная регулировка" }
+      - { id: ltc,              name: "LTC (Liquid Time-Constant)",     layer: front,   role: "Адаптация к среде" }
+      - { id: ncp,              name: "NCP (Neural Circuit Policies)",  layer: front,   role: "Сверхкомпактное управление" }
+      - { id: esn,              name: "ESN (Echo State Networks)",      layer: polygon, role: "Прогноз загрузки" }
+      - { id: lsm,              name: "LSM (Liquid State Machines)",    layer: front,   role: "Реакция на события" }
+      - { id: mpc,              name: "MPC (Model Predictive Control)", layer: front,   role: "Мягкая траектория" }
+      - { id: kalman-filter,    name: "Фильтр Калмана (EKF/UKF)",       layer: front,   role: "Слияние датчиков" }
+
+  - id: organ-6
+    name: "Фильтрация бесконечных потоков и память"
+    alias: "Диспетчер"
+    layers_hint: [polygon, stratos]
+    models:
+      - { id: mamba,            name: "Mamba-2 / Mamba-3",              layer: polygon, role: "Поток событий (сжатие)" }
+      - { id: rwkv-7,           name: "RWKV-7",                         layer: polygon, role: "Бесконечный конвейер" }
+      - { id: retnet,           name: "RetNet",                         layer: stratos, role: "Память с затуханием" }
+      - { id: xlstm,            name: "xLSTM",                          layer: polygon, role: "Длинные цепочки" }
+      - { id: griffin,          name: "Griffin", aliases: ["Hawk"],     layer: polygon, role: "Потоковая телеметрия" }
+      - { id: hyena-hierarchy,  name: "Hyena Hierarchy",                layer: polygon, role: "Длинные свёртки" }
+      - { id: jamba,            name: "Jamba",                          layer: polygon, role: "Гибрид (Mamba + Attention)" }
+
+  - id: organ-7
+    name: "Модели мира, физика и симуляция"
+    alias: "Воображение"
+    layers_hint: [growth, stratos]
+    models:
+      - { id: jepa,             name: "I-JEPA / V-JEPA 2",              layer: growth,  role: "Модель мира (физика)" }
+      - { id: td-mpc2,          name: "TD-MPC2",                        layer: growth,  role: "Планирование траектории" }
+      - { id: dreamerv3,        name: "DreamerV3",                      layer: growth,  role: "Симулятор среды" }
+      - { id: decision-transformer, name: "Decision Transformer",       layer: growth,  role: "Цепочка шагов к результату" }
+      - { id: gns,              name: "GNS (Graph Network Simulators)", layer: growth,  role: "Физика на графах" }
+      - { id: pinn,             name: "PINN (Physics-Informed NN)",     layer: polygon, role: "Физика в нейросети" }
+      - { id: fno,              name: "FNO (Fourier Neural Operator)",  layer: growth,  role: "Уравнения в частотной области" }
+      - { id: active-inference, name: "Active Inference",               layer: growth,  role: "Минимизация «удивления»" }
+
+# Первая волна: 21 слот по слоям (не 21 уникальная модель — есть повторы между слоями)
+first_wave:
+  total_slots: 21
+  front:   [HDC, Tsetlin, "D* Lite", TTL, Capacity, Pasport, CfC, MPC]
+  polygon: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN]
+  growth:  [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE]
+  stratos: ["HDC-индекс", "LSH+HNSW"]
+  notes:
+    - "TTL, Capacity, Pasport в реестре 55 отсутствуют — это механизмы, а не модели (см. review-01)."
+    - "CfC и Tsetlin повторяются в front и polygon — это слоты, а не уникальные модели."
+
+# Способ исполнения (как в исходнике)
+execution:
+  native_go: ["HDC", "Tsetlin", "D* Lite", "MCTS", "A*"]
+  onnx_or_c: ["KAN", "CfC", "Mamba-3", "RWKV-7"]
+  gpu: ["V-JEPA 2", "TD-MPC2", "DreamerV3"]
+
+# Предлагаемая структура модулей (порядок из исходника; реализация не начата)
+planned_modules:
+  - { path: "modules/front/models.go",   items: [HDC, Tsetlin, "D* Lite", MCTS, TTL, Capacity, Pasport] }
+  - { path: "modules/polygon/models.go", items: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN] }
+  - { path: "modules/growth/models.go",  items: [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE] }
+  - { path: "modules/stratos/models.go", items: ["HDC-индекс", "LSH+HNSW"] }
