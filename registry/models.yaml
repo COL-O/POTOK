@@ -115,16 +115,22 @@ organs:
       - { id: fno,              name: "FNO (Fourier Neural Operator)",  layer: growth,  role: "Уравнения в частотной области" }
       - { id: active-inference, name: "Active Inference",               layer: growth,  role: "Минимизация «удивления»" }
 
-# Первая волна: 21 слот по слоям (не 21 уникальная модель — есть повторы между слоями)
+# Первая волна: 21 позиция по слоям (обновлено по описанию слоёв, разбор №2)
+# 7 + 6 + 6 + 2 = 21 сходится точно. Позиции — не уникальные модели: Tsetlin, MCTS и LUT-KAN
+# встречаются в двух слоях с разными задачами (межслойное переиспользование — норма).
 first_wave:
   total_slots: 21
-  front:   [HDC, Tsetlin, "D* Lite", TTL, Capacity, Pasport, CfC, MPC]
+  front:   [HDC, Tsetlin, "D* Lite", MCTS, TTL, Capacity, Pasport]
   polygon: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN]
-  growth:  [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE]
-  stratos: ["HDC-индекс", "LSH+HNSW"]
+  growth:  [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE, TD-MPC2]
+  stratos: ["HDC-индекс", "Matrix Profile-индекс"]
+  mechanisms: ["SHA-256 (stratos)"]
+  superseded:
+    - "front из разбора №1 (HDC, Tsetlin, D* Lite, TTL, Capacity, Pasport, CfC, MPC) — заменён семёркой выше; CfC/MPC в первую волну front не входят."
   notes:
-    - "TTL, Capacity, Pasport в реестре 55 отсутствуют — это механизмы, а не модели (см. review-01)."
-    - "CfC и Tsetlin повторяются в front и polygon — это слоты, а не уникальные модели."
+    - "TTL, Capacity, Pasport в реестре 55 отсутствуют — это механизмы слоёв, а не модели (подтверждено для SHA-256 в stratos; см. review-01, review-02)."
+    - "KAN в polygon — KAN-диагност (FastKAN / LUT-KAN): та же модель, что LUT-KAN в growth, но другая задача."
+    - "LSH+HNSW из первого описания stratos в актуальном своде заменён парой HDC-индекс + Matrix Profile-индекс."
 
 # Способ исполнения (как в исходнике)
 execution:
@@ -136,5 +142,5 @@ execution:
 planned_modules:
   - { path: "modules/front/models.go",   items: [HDC, Tsetlin, "D* Lite", MCTS, TTL, Capacity, Pasport] }
   - { path: "modules/polygon/models.go", items: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN] }
-  - { path: "modules/growth/models.go",  items: [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE] }
-  - { path: "modules/stratos/models.go", items: ["HDC-индекс", "LSH+HNSW"] }
+  - { path: "modules/growth/models.go",  items: [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE, TD-MPC2] }
+  - { path: "modules/stratos/models.go", items: ["HDC-индекс", "Matrix Profile-индекс"], mechanisms: ["SHA-256"] }
