@@ -55,5 +55,8 @@ monitoring-up:
 monitoring-down:
 	docker compose -f deploy/docker-compose.monitoring.yml down
 
+pv:
+	kubectl apply -f deploy/k8s/pv.yaml
+
 clean:
 	rm -rf bin
