@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+scrape_configs:
+  - job_name: "organism-core"
+    metrics_path: "/prometheus"
+    static_configs:
+      - targets: ["organism:8080"]
+        labels:
+          system: "moe-organism"
+          environment: "production"
