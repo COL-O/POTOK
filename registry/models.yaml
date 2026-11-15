@@ -1,146 +1,499 @@
-# POTOK — машиночитаемый реестр моделей (стартовая редакция)
-# Статус: draft / awaiting-project-brief (пояснение проекта ещё не поступило)
-# Человекочитаемая версия: docs/registry/models-55.md
+# Машиночитаемый реестр моделей POTOK
+# 24 активных органа + 31 наследие = 55
+# Формат: id, name, layer, bit, read_lanes, write_lane, residency, soft_timeout, hard_timeout
 
-meta:
-  declared_total: 55        # как заявлено в исходнике
-  entries_count: 56         # фактическое число строк-позиций в таблицах органов (см. review-01)
-  organs_count: 7
-  layers: [front, polygon, growth, stratos]
-  status: draft-awaiting-project-brief
-  implementation_started: false
+version: "1.0"
+total_models: 55
+active_models: 24
+legacy_models: 31
 
 layers:
-  front:   { meaning: "Рефлекс",   timescale: "наносекунды–миллисекунды" }
-  polygon: { meaning: "Иммунитет", timescale: "минуты–часы" }
-  growth:  { meaning: "Рост",      timescale: "часы–дни" }
-  stratos: { meaning: "Память",    timescale: "годы–века" }
+  front:
+    horizon: "nanoseconds-milliseconds"
+    count: 7
+  polygon:
+    horizon: "minutes-hours"
+    count: 6
+  growth:
+    horizon: "hours-days"
+    count: 6
+  stratos:
+    horizon: "years-centuries"
+    count: 5
 
-organs:
-  - id: organ-1
-    name: "Автономный транспорт и навигация"
-    alias: "Автопилот и Лоция"
-    layers_hint: [front, growth]
-    models:
-      - { id: uniad,            name: "UniAD",                          layer: growth,  role: "Сквозное планирование (глобально)" }
-      - { id: vad,              name: "VAD",                            layer: front,   role: "Векторное восприятие (локально)" }
-      - { id: hydra-mdp,        name: "Hydra-MDP",                      layer: front,   role: "Мульти-голова (выбор траектории)" }
-      - { id: diffusion-drive,  name: "DiffusionDrive", aliases: ["Diffusion Policy"], layer: growth, role: "Генерация траекторий (развилки)" }
-      - { id: drive-lm,         name: "DriveLM", aliases: ["EMMA"],     layer: polygon, role: "Пространственное рассуждение" }
-      - { id: occupancy-networks, name: "Occupancy Networks",           layer: front,   role: "3D-карта занятости" }
-      - { id: rrt,              name: "RRT", aliases: ["Informed RRT*"], layer: front,  role: "Быстрая навигация (склад)" }
-      - { id: hybrid-a-star,    name: "Hybrid A*",                      layer: front,   role: "Поиск пути с физикой шасси" }
-      - { id: teb,              name: "TEB (Timed Elastic Band)",       layer: front,   role: "Локальный объезд" }
-      - { id: orca,             name: "ORCA", aliases: ["RVO2"],        layer: front,   role: "Коллективная навигация (рои)" }
+models:
+  # ============================================================
+  # Слой front (7 активных, слоты 0..6)
+  # ============================================================
+  - id: 0
+    name: "HDC"
+    layer: "front"
+    bit: 0
+    read_lanes: ["LanePulse", "LaneHDC"]
+    write_lane: "LanePulse"
+    residency: "Pinned"
+    soft_timeout_us: 2
+    hard_timeout_us: 10
+    description: "Мгновенное узнавание образа через XOR + POPCNT"
+    status: "active"
 
-  - id: organ-2
-    name: "Узнавание ситуаций и логические переключатели"
-    alias: "Радар и Засов"
-    layers_hint: [front, stratos]
-    models:
-      - { id: hdc,              name: "HDC / VSA",                      layer: front,   role: "Узнавание ситуации (наносекунды)" }
-      - { id: tsetlin-machine,  name: "Tsetlin Machine",                layer: front,   role: "Жёсткие переключатели" }
-      - { id: matrix-profile,   name: "Matrix Profile",                 layer: polygon, role: "Аномалии в потоке" }
-      - { id: lsh-hnsw,         name: "LSH + HNSW",                     layer: stratos, role: "Поиск прецедентов (recall)" }
-      - { id: snn,              name: "SNN (Spiking Neural Networks)",  layer: front,   role: "Реакция на редкие события" }
+  - id: 1
+    name: "Tsetlin"
+    layer: "front"
+    bit: 1
+    read_lanes: ["LanePulse"]
+    write_lane: "LanePulse"
+    residency: "Pinned"
+    soft_timeout_us: 2
+    hard_timeout_us: 10
+    description: "Булев диспетчер правил (сборка маски)"
+    status: "active"
 
-  - id: organ-3
-    name: "Навигация по карте веток и объезд"
-    alias: "Лоцман и Стрелочник"
-    layers_hint: [front, polygon, growth]
-    models:
-      - { id: d-star-lite,      name: "D* Lite",                        layer: front,   role: "Обход завала (локально)" }
-      - { id: cbs,              name: "CBS (Conflict-Based Search)",    layer: polygon, role: "Конфликты ресурсов" }
-      - { id: mcts,             name: "MCTS",                           layer: growth,  role: "Разведка веток" }
-      - { id: bellman-a-star,   name: "Беллман / A*",                    layer: front,   role: "Кратчайший путь (статический)" }
-      - { id: mpnn,             name: "MPNN (Message Passing NN)",      layer: growth,  role: "Передача сигналов по графу" }
-      - { id: tgn,              name: "TGN (Temporal Graph Networks)",  layer: polygon, role: "Прогноз узких мест" }
-      - { id: graphsage,        name: "GraphSAGE",                      layer: growth,  role: "Оценка новых узлов" }
-      - { id: gatv2,            name: "GATv2 (Graph Attention)",        layer: polygon, role: "Динамические веса связей" }
-      - { id: neural-logic-machines, name: "Neural Logic Machines (NLM)", layer: polygon, role: "Логические правила на графах" }
-      - { id: deepproblog,      name: "DeepProbLog", aliases: ["Scallop"], layer: polygon, role: "Нейро-логика (жёсткие правила)" }
+  - id: 2
+    name: "TTL"
+    layer: "front"
+    bit: 2
+    read_lanes: ["LanePulse"]
+    write_lane: "LanePulse"
+    residency: "Pinned"
+    soft_timeout_us: 1
+    hard_timeout_us: 5
+    description: "Контроль бюджета времени жизни импульса"
+    status: "active"
 
-  - id: organ-4
-    name: "Поиск формул и самообновление рецептов"
-    alias: "Инженерный отдел"
-    layers_hint: [growth, stratos]
-    models:
-      - { id: kan-2,            name: "KAN 2.0",                        layer: growth,  role: "Формула из таблиц" }
-      - { id: fastkan,          name: "FastKAN", aliases: ["FasterKAN"], layer: growth, role: "Ускоренная формула" }
-      - { id: lut-kan,          name: "LUT-KAN",                        layer: growth,  role: "Формула в таблицах поиска", note: "в комментарии исходника также упомянут для front при простой формуле" }
-      - { id: fourierkan,       name: "FourierKAN",                     layer: growth,  role: "Циклы, сезонность" }
-      - { id: chebykan,         name: "ChebyKAN",                       layer: growth,  role: "Точное приближение" }
-      - { id: wav-kan,          name: "Wav-KAN",                        layer: polygon, role: "Резкие скачки, удары" }
-      - { id: sindy,            name: "SINDy",                          layer: growth,  role: "Дифференциальные уравнения" }
-      - { id: pysr,             name: "PySR",                           layer: growth,  role: "Эволюционный поиск формул" }
-      - { id: symbolnet,        name: "SymbolNet",                      layer: growth,  role: "Символьная регрессия (поток)" }
+  - id: 3
+    name: "Capacity"
+    layer: "front"
+    bit: 3
+    read_lanes: ["LanePulse", "LaneGraph"]
+    write_lane: "LanePulse"
+    residency: "Pinned"
+    soft_timeout_us: 3
+    hard_timeout_us: 15
+    description: "Контроль пиковой нагрузки рёбер графа"
+    status: "active"
 
-  - id: organ-5
-    name: "Плавная регулировка и удержание баланса"
-    alias: "Спинной мозг и Рулевой"
-    layers_hint: [front, polygon]
-    models:
-      - { id: cfc,              name: "CfC (Closed-form Continuous-time)", layer: front, role: "Плавная регулировка" }
-      - { id: ltc,              name: "LTC (Liquid Time-Constant)",     layer: front,   role: "Адаптация к среде" }
-      - { id: ncp,              name: "NCP (Neural Circuit Policies)",  layer: front,   role: "Сверхкомпактное управление" }
-      - { id: esn,              name: "ESN (Echo State Networks)",      layer: polygon, role: "Прогноз загрузки" }
-      - { id: lsm,              name: "LSM (Liquid State Machines)",    layer: front,   role: "Реакция на события" }
-      - { id: mpc,              name: "MPC (Model Predictive Control)", layer: front,   role: "Мягкая траектория" }
-      - { id: kalman-filter,    name: "Фильтр Калмана (EKF/UKF)",       layer: front,   role: "Слияние датчиков" }
+  - id: 4
+    name: "DStarLite"
+    layer: "front"
+    bit: 4
+    read_lanes: ["LaneGraph"]
+    write_lane: "LaneGraph"
+    residency: "Pinned"
+    soft_timeout_us: 5
+    hard_timeout_us: 25
+    description: "Локальный графовый обход завала"
+    status: "active"
 
-  - id: organ-6
-    name: "Фильтрация бесконечных потоков и память"
-    alias: "Диспетчер"
-    layers_hint: [polygon, stratos]
-    models:
-      - { id: mamba,            name: "Mamba-2 / Mamba-3",              layer: polygon, role: "Поток событий (сжатие)" }
-      - { id: rwkv-7,           name: "RWKV-7",                         layer: polygon, role: "Бесконечный конвейер" }
-      - { id: retnet,           name: "RetNet",                         layer: stratos, role: "Память с затуханием" }
-      - { id: xlstm,            name: "xLSTM",                          layer: polygon, role: "Длинные цепочки" }
-      - { id: griffin,          name: "Griffin", aliases: ["Hawk"],     layer: polygon, role: "Потоковая телеметрия" }
-      - { id: hyena-hierarchy,  name: "Hyena Hierarchy",                layer: polygon, role: "Длинные свёртки" }
-      - { id: jamba,            name: "Jamba",                          layer: polygon, role: "Гибрид (Mamba + Attention)" }
+  - id: 5
+    name: "MCTS"
+    layer: "front"
+    bit: 5
+    read_lanes: ["LaneGraph"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_us: 10
+    hard_timeout_us: 50
+    description: "Быстрая разведка веток при развилке"
+    status: "active"
 
-  - id: organ-7
-    name: "Модели мира, физика и симуляция"
-    alias: "Воображение"
-    layers_hint: [growth, stratos]
-    models:
-      - { id: jepa,             name: "I-JEPA / V-JEPA 2",              layer: growth,  role: "Модель мира (физика)" }
-      - { id: td-mpc2,          name: "TD-MPC2",                        layer: growth,  role: "Планирование траектории" }
-      - { id: dreamerv3,        name: "DreamerV3",                      layer: growth,  role: "Симулятор среды" }
-      - { id: decision-transformer, name: "Decision Transformer",       layer: growth,  role: "Цепочка шагов к результату" }
-      - { id: gns,              name: "GNS (Graph Network Simulators)", layer: growth,  role: "Физика на графах" }
-      - { id: pinn,             name: "PINN (Physics-Informed NN)",     layer: polygon, role: "Физика в нейросети" }
-      - { id: fno,              name: "FNO (Fourier Neural Operator)",  layer: growth,  role: "Уравнения в частотной области" }
-      - { id: active-inference, name: "Active Inference",               layer: growth,  role: "Минимизация «удивления»" }
+  - id: 6
+    name: "Pasport"
+    layer: "front"
+    bit: 6
+    read_lanes: ["LanePulse"]
+    write_lane: "LaneMeta"
+    residency: "Pinned"
+    soft_timeout_us: 1
+    hard_timeout_us: 5
+    description: "Атомарная фиксация факта такта"
+    status: "active"
 
-# Первая волна: 21 позиция по слоям (обновлено по описанию слоёв, разбор №2)
-# 7 + 6 + 6 + 2 = 21 сходится точно. Позиции — не уникальные модели: Tsetlin, MCTS и LUT-KAN
-# встречаются в двух слоях с разными задачами (межслойное переиспользование — норма).
-first_wave:
-  total_slots: 21
-  front:   [HDC, Tsetlin, "D* Lite", MCTS, TTL, Capacity, Pasport]
-  polygon: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN]
-  growth:  [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE, TD-MPC2]
-  stratos: ["HDC-индекс", "Matrix Profile-индекс"]
-  mechanisms: ["SHA-256 (stratos)"]
-  superseded:
-    - "front из разбора №1 (HDC, Tsetlin, D* Lite, TTL, Capacity, Pasport, CfC, MPC) — заменён семёркой выше; CfC/MPC в первую волну front не входят."
-  notes:
-    - "TTL, Capacity, Pasport в реестре 55 отсутствуют — это механизмы слоёв, а не модели (подтверждено для SHA-256 в stratos; см. review-01, review-02)."
-    - "KAN в polygon — KAN-диагност (FastKAN / LUT-KAN): та же модель, что LUT-KAN в growth, но другая задача."
-    - "LSH+HNSW из первого описания stratos в актуальном своде заменён парой HDC-индекс + Matrix Profile-индекс."
+  # ============================================================
+  # Слой polygon (6 активных, слоты 7..12)
+  # ============================================================
+  - id: 7
+    name: "MatrixProfile"
+    layer: "polygon"
+    bit: 7
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 10
+    hard_timeout_ms: 50
+    description: "Отделение аномалии от шума"
+    status: "active"
 
-# Способ исполнения (как в исходнике)
-execution:
-  native_go: ["HDC", "Tsetlin", "D* Lite", "MCTS", "A*"]
-  onnx_or_c: ["KAN", "CfC", "Mamba-3", "RWKV-7"]
-  gpu: ["V-JEPA 2", "TD-MPC2", "DreamerV3"]
+  - id: 8
+    name: "KAN"
+    layer: "polygon"
+    bit: 8
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 15
+    hard_timeout_ms: 60
+    description: "Формула причины с Domain Guard"
+    status: "active"
 
-# Предлагаемая структура модулей (порядок из исходника; реализация не начата)
-planned_modules:
-  - { path: "modules/front/models.go",   items: [HDC, Tsetlin, "D* Lite", MCTS, TTL, Capacity, Pasport] }
-  - { path: "modules/polygon/models.go", items: [KAN, CfC, "Matrix Profile", Tsetlin, CBS, ESN] }
-  - { path: "modules/growth/models.go",  items: [MCTS, LUT-KAN, SINDy, "Active Inference", GraphSAGE, TD-MPC2] }
-  - { path: "modules/stratos/models.go", items: ["HDC-индекс", "Matrix Profile-индекс"], mechanisms: ["SHA-256"] }
+  - id: 9
+    name: "CfC"
+    layer: "polygon"
+    bit: 9
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 10
+    hard_timeout_ms: 50
+    description: "Прогноз развития сбоя"
+    status: "active"
+
+  - id: 10
+    name: "CBS"
+    layer: "polygon"
+    bit: 10
+    read_lanes: ["LanePulse", "LaneGraph"]
+    write_lane: "LaneGraph"
+    residency: "WarmMmap"
+    soft_timeout_ms: 25
+    hard_timeout_ms: 100
+    description: "Развод конфликтов ресурсов"
+    status: "active"
+
+  - id: 11
+    name: "ESN"
+    layer: "polygon"
+    bit: 11
+    read_lanes: ["LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 15
+    hard_timeout_ms: 60
+    description: "Прогноз ритма и пиков загрузки"
+    status: "active"
+
+  - id: 12
+    name: "PolygonTsetlin"
+    layer: "polygon"
+    bit: 12
+    read_lanes: ["LanePulse"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 5
+    hard_timeout_ms: 20
+    description: "Синтез антитела, VetoMask"
+    status: "active"
+
+  # ============================================================
+  # Слой growth (6 активных, слоты 13..18)
+  # ============================================================
+  - id: 13
+    name: "GraphSAGE"
+    layer: "growth"
+    bit: 13
+    read_lanes: ["LanePulse", "LaneGraph"]
+    write_lane: "LaneGraph"
+    residency: "ColdMmap"
+    soft_timeout_ms: 200
+    hard_timeout_ms: 2000
+    description: "Оценка топологии графа"
+    status: "active"
+
+  - id: 14
+    name: "ActiveInference"
+    layer: "growth"
+    bit: 14
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "ColdMmap"
+    soft_timeout_ms: 200
+    hard_timeout_ms: 2000
+    description: "Минимизация удивления"
+    status: "active"
+
+  - id: 15
+    name: "SINDy"
+    layer: "growth"
+    bit: 15
+    read_lanes: ["LaneTensor"]
+    write_lane: "LaneTensor"
+    residency: "ColdMmap"
+    soft_timeout_ms: 500
+    hard_timeout_ms: 5000
+    description: "Поиск дифференциальных уравнений"
+    status: "active"
+
+  - id: 16
+    name: "LUTKAN"
+    layer: "growth"
+    bit: 16
+    read_lanes: ["LaneTensor"]
+    write_lane: "LaneTensor"
+    residency: "ColdMmap"
+    soft_timeout_ms: 200
+    hard_timeout_ms: 2000
+    description: "Синтез быстрой таблицы"
+    status: "active"
+
+  - id: 17
+    name: "GrowthMCTS"
+    layer: "growth"
+    bit: 17
+    read_lanes: ["LaneGraph"]
+    write_lane: "LaneGraph"
+    residency: "ColdMmap"
+    soft_timeout_ms: 1000
+    hard_timeout_ms: 10000
+    description: "Глубокая разведка веток"
+    status: "active"
+
+  - id: 18
+    name: "TDMPC2"
+    layer: "growth"
+    bit: 18
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "ColdMmap"
+    soft_timeout_ms: 500
+    hard_timeout_ms: 5000
+    description: "План перехода"
+    status: "active"
+
+  # ============================================================
+  # Слой stratos (5 активных, слоты 19..23)
+  # ============================================================
+  - id: 19
+    name: "HDCIndex"
+    layer: "stratos"
+    bit: 19
+    read_lanes: ["LanePulse", "LaneHDC"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 5
+    hard_timeout_ms: 20
+    description: "Мгновенный поиск прецедентов"
+    status: "active"
+
+  - id: 20
+    name: "LSHHNSW"
+    layer: "stratos"
+    bit: 20
+    read_lanes: ["LanePulse", "LaneVector"]
+    write_lane: "LanePulse"
+    residency: "ColdMmap"
+    soft_timeout_ms: 10
+    hard_timeout_ms: 50
+    description: "Приближённый поиск соседей"
+    status: "active"
+
+  - id: 21
+    name: "RetNet"
+    layer: "stratos"
+    bit: 21
+    read_lanes: ["LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "WarmMmap"
+    soft_timeout_ms: 5
+    hard_timeout_ms: 25
+    description: "Память с экспоненциальным затуханием"
+    status: "active"
+
+  - id: 22
+    name: "MPIndex"
+    layer: "stratos"
+    bit: 22
+    read_lanes: ["LaneTensor"]
+    write_lane: "LanePulse"
+    residency: "ColdMmap"
+    soft_timeout_ms: 15
+    hard_timeout_ms: 60
+    description: "Поиск исторических дискордов"
+    status: "active"
+
+  - id: 23
+    name: "SHA256Seal"
+    layer: "stratos"
+    bit: 23
+    read_lanes: ["LanePulse", "LaneHDC"]
+    write_lane: "LaneMeta"
+    residency: "Pinned"
+    soft_timeout_ms: 2
+    hard_timeout_ms: 10
+    description: "Криптографическая печать целостности"
+    status: "active"
+
+# ============================================================
+# Наследие (31 орган, слоты 24..54)
+# ============================================================
+legacy_models:
+  - id: 24
+    name: "DroneAcoustic"
+    profile: "drone"
+    read_lanes: ["LanePulse", "LaneAudio"]
+    write_lane: "LanePulse"
+    description: "Акустический удар / сближение ротора"
+
+  - id: 25
+    name: "DroneLidar"
+    profile: "drone"
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    description: "Лидарные данные"
+
+  - id: 26
+    name: "DroneGPS"
+    profile: "drone"
+    read_lanes: ["LanePulse", "LaneTensor"]
+    write_lane: "LanePulse"
+    description: "GPS-координаты"
+
+  - id: 27
+    name: "TransportORCA"
+    profile: "transport"
+    read_lanes: ["LaneGraph"]
+    write_lane: "LaneGraph"
+    description: "Коллективная навигация ORCA"
+
+  - id: 28
+    name: "TransportTEB"
+    profile: "transport"
+    read_lanes: ["LaneGraph"]
+    write_lane: "LaneGraph"
+    description: "Локальный планировщик TEB"
+
+  - id: 29
+    name: "WarehouseDAG"
+    profile: "warehouse"
+    read_lanes: ["LaneGraph"]
+    write_lane: "LaneGraph"
+    description: "DAG-маршрутизация склада"
+
+  - id: 30
+    name: "AcousticAnomaly"
+    profile: "factory"
+    read_lanes: ["LaneAudio"]
+    write_lane: "LanePulse"
+    description: "Акустическая аномалия на заводе"
+
+  - id: 31
+    name: "VideoEmbedding"
+    profile: "factory"
+    read_lanes: ["LaneVector"]
+    write_lane: "LanePulse"
+    description: "Видео-эмбеддинги"
+
+  # слоты 32..54 — резерв под будущие модальности
+  - id: 32
+    name: "ThermalSensor"
+    profile: "reserve"
+    description: "Тепловизор"
+
+  - id: 33
+    name: "RadarSensor"
+    profile: "reserve"
+    description: "Радар"
+
+  - id: 34
+    name: "UltrasoundSensor"
+    profile: "reserve"
+    description: "Ультразвук"
+
+  - id: 35
+    name: "Magnetometer"
+    profile: "reserve"
+    description: "Магнитометр"
+
+  - id: 36
+    name: "ChemicalSensor"
+    profile: "reserve"
+    description: "Химический сенсор"
+
+  - id: 37
+    name: "RadiationSensor"
+    profile: "reserve"
+    description: "Радиационный сенсор"
+
+  - id: 38
+    name: "BiometricSensor"
+    profile: "reserve"
+    description: "Биометрический сенсор"
+
+  - id: 39
+    name: "VibrationSensor"
+    profile: "reserve"
+    description: "Вибродатчик"
+
+  - id: 40
+    name: "PressureSensor"
+    profile: "reserve"
+    description: "Датчик давления"
+
+  - id: 41
+    name: "FlowSensor"
+    profile: "reserve"
+    description: "Датчик потока"
+
+  - id: 42
+    name: "HumiditySensor"
+    profile: "reserve"
+    description: "Датчик влажности"
+
+  - id: 43
+    name: "GasSensor"
+    profile: "reserve"
+    description: "Газоанализатор"
+
+  - id: 44
+    name: "OpticalSensor"
+    profile: "reserve"
+    description: "Оптический сенсор"
+
+  - id: 45
+    name: "ForceSensor"
+    profile: "reserve"
+    description: "Датчик усилия"
+
+  - id: 46
+    name: "TorqueSensor"
+    profile: "reserve"
+    description: "Датчик крутящего момента"
+
+  - id: 47
+    name: "ProximitySensor"
+    profile: "reserve"
+    description: "Датчик приближения"
+
+  - id: 48
+    name: "CurrentSensor"
+    profile: "reserve"
+    description: "Датчик тока"
+
+  - id: 49
+    name: "VoltageSensor"
+    profile: "reserve"
+    description: "Датчик напряжения"
+
+  - id: 50
+    name: "PowerSensor"
+    profile: "reserve"
+    description: "Датчик мощности"
+
+  - id: 51
+    name: "EnergySensor"
+    profile: "reserve"
+    description: "Датчик энергии"
+
+  - id: 52
+    name: "PositionSensor"
+    profile: "reserve"
+    description: "Датчик позиции"
+
+  - id: 53
+    name: "VelocitySensor"
+    profile: "reserve"
+    description: "Датчик скорости"
+
+  - id: 54
+    name: "AccelerationSensor"
+    profile: "reserve"
+    description: "Датчик ускорения"
