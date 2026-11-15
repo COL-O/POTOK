@@ -45,8 +45,14 @@ func TestOrganismChainOnStuckFlight(t *testing.T) {
 	stratosMod.SetStore(st)
 
 	reg := core.NewRegistry()
-	for _, m := range []core.Module{frontMod, polygonMod, growthMod, stratosMod} {
-		if err := reg.Register(m, core.Manifest{Name: m.Name(), Enabled: true}); err != nil {
+	manifests := []core.Manifest{
+		{Name: "front", Role: core.RoleReflex, Layer: core.LayerFront, Enabled: true},
+		{Name: "polygon", Role: core.RoleImmunity, Layer: core.LayerPolygon, Enabled: true},
+		{Name: "growth", Role: core.RoleGrowth, Layer: core.LayerGrowth, Enabled: true},
+		{Name: "stratos", Role: core.RoleMemory, Layer: core.LayerStratos, Enabled: true},
+	}
+	for i, m := range []core.Module{frontMod, polygonMod, growthMod, stratosMod} {
+		if err := reg.Register(m, manifests[i]); err != nil {
 			t.Fatalf("register %s: %v", m.Name(), err)
 		}
 	}
