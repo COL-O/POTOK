@@ -1,57 +1,65 @@
 # POTOK — Единый индустриальный организм
 
-**POTOK** — это вычислительная архитектура реального времени на Go, реализующая паттерн **MoE-организма**: вместо одной гигантской модели — **24 активных органа** разной вычислительной природы (битовые, булевы, графовые, сплайновые, дифференциальные, геометрические), объединённых **общим полем** (Типизированная Шина) и **четырьмя контурами времени**.
+**POTOK** — вычислительная архитектура реального времени на Go, реализующая паттерн **MoE-организма**: вместо одной гигантской модели — **24 активных органа** разной вычислительной природы, объединённых **общим полем** (Типизированная Шина) и **четырьмя контурами времени**.
 
-**Статус:** скелет «окончания» воплощён в коде. Проектное описание поступает в обратном порядке — от окончания к началу.
+## Статус
 
-## Смысл проекта
+Скелет «окончания» воплощён в коде. Проектное описание поступает в обратном порядке — от окончания к началу.
 
-Организм на Go-сервере: **система управления 100+ заводами** и **10 000+ продуктами**, где учёт, диспетчеризация, иммунитет, рост и память — **органы одного тела**, а не модули одной программы.
-
-Подробно: [`docs/concept/project-meaning.md`](docs/concept/project-meaning.md).
-
-## Запуск скелета
+## Запуск
 
 ```bash
-go run .        # генерация мира (100 заводов), старт слоёв, тестовые рейсы
-go test ./...   # unit + сквозной тест цепочки front→polygon→growth→stratos
+./bootstrap.sh --check   # проверка структуры + тесты + сборка
+make run                 # запуск организма с HTTP-дашбордом
+make simple              # минимальный пример
+make drone               # профиль дрона
 ```
 
-Код — **только стандартная библиотека Go** (внешние зависимости скелета заменены локальными реализациями за теми же интерфейсами).
-
-## Структура документации
+## Документация
 
 | Документ | Что внутри |
 |---|---|
-| [`docs/00-manifest.md`](docs/00-manifest.md) | **11 КОНов** — законы организма |
-| [`docs/01-architecture.md`](docs/01-architecture.md) | **5 слоёв**, 24 органа, ASCII-карта |
-| [`docs/02-bus.md`](docs/02-bus.md) | **Шина** — 10 дорожек, Zero-GC, Epoch Fencing |
-| [`docs/03-front.md`](docs/03-front.md) | **Передовая** — 7 органов, 8 предохранителей |
-| [`docs/04-polygon.md`](docs/04-polygon.md) | **Иммунитет** — 6 органов, арбитраж, VetoMask |
-| [`docs/05-growth.md`](docs/05-growth.md) | **Рост** — 6 органов, 5 предохранителей |
-| [`docs/06-stratos.md`](docs/06-stratos.md) | **Память** — 5 органов, WAL, RCU |
-| [`docs/07-network.md`](docs/07-network.md) | **Восприятие** — UDP → HDC, Z-score, 128 базисов |
-| [`docs/08-organism.md`](docs/08-organism.md) | **Сборка** — `main.go`, `dashboard.go`, LIFO |
-| [`docs/09-infrastructure.md`](docs/09-infrastructure.md) | **Инфраструктура** — `bootstrap.sh`, `Makefile`, Docker, K8s |
-| [`docs/10-examples.md`](docs/10-examples.md) | **Примеры** — `simple`, `drone` |
-| [`docs/11-contributing.md`](docs/11-contributing.md) | **Как добавить 25-й орган** (КОН 8) |
-| [`docs/12-first-run.md`](docs/12-first-run.md) | **Первый запуск** — `./bootstrap.sh --check` |
-| [`docs/13-roadmap.md`](docs/13-roadmap.md) | **Что дальше** — нагрузка, сценарии, правки |
+| [`docs/00-manifest.md`](docs/00-manifest.md) | 11 КОНов — законы организма |
+| [`docs/01-architecture.md`](docs/01-architecture.md) | 5 слоёв, 24 органа, ASCII-карта |
+| [`docs/02-bus.md`](docs/02-bus.md) | Шина — 10 дорожек, Zero-GC, Epoch Fencing |
+| [`docs/03-front.md`](docs/03-front.md) | Передовая — 7 органов, 8 предохранителей |
+| [`docs/04-polygon.md`](docs/04-polygon.md) | Иммунитет — 6 органов, арбитраж, VetoMask |
+| [`docs/05-growth.md`](docs/05-growth.md) | Рост — 6 органов, 5 предохранителей |
+| [`docs/06-stratos.md`](docs/06-stratos.md) | Память — 5 органов, WAL, RCU |
+| [`docs/07-network.md`](docs/07-network.md) | Восприятие — UDP → HDC, Z-score, 128 базисов |
+| [`docs/08-organism.md`](docs/08-organism.md) | Сборка — `main.go`, `dashboard.go`, LIFO |
+| [`docs/09-infrastructure.md`](docs/09-infrastructure.md) | Инфраструктура — `bootstrap.sh`, `Makefile`, Docker, K8s |
+| [`docs/10-examples.md`](docs/10-examples.md) | Примеры — `simple`, `drone` |
+| [`docs/11-contributing.md`](docs/11-contributing.md) | Как добавить 25-й орган (КОН 8) |
+| [`docs/12-first-run.md`](docs/12-first-run.md) | Первый запуск — `./bootstrap.sh --check` |
+| [`docs/13-roadmap.md`](docs/13-roadmap.md) | Что дальше — нагрузка, сценарии, правки |
 
-## Реестр моделей
+## Структура
 
-- **7 органов** (front / polygon / growth / stratos) — [`docs/registry/models-55.md`](docs/registry/models-55.md)
-- **Машиночитаемый реестр** — [`registry/models.yaml`](registry/models.yaml)
-- **Слои polygon / growth / stratos** — [`docs/layers/polygon-growth-stratos.md`](docs/layers/polygon-growth-stratos.md)
-
-## КОНы и реестр концептов
-
-- **КОНы** — [`docs/concept/kons.md`](docs/concept/kons.md)
-- **Реестр концептов** — [`docs/concept/concepts-index.md`](docs/concept/concepts-index.md)
-
-## Разборы и открытые вопросы
-
-- **Разборы** — [`docs/notes/`](docs/notes/) (review-01 … review-04)
+```
+POTOK/
+├── README.md
+├── go.mod
+├── bootstrap.sh
+├── Makefile
+├── Dockerfile
+├── docker-compose.yml
+├── integration_test.go
+├── docs/                  # 15 файлов документации
+├── contracts/             # Pydantic-подобные (Go-структуры)
+├── core/                  # Реестр, шина, интерфейсы
+├── modules/
+│   ├── bus/               # 10 дорожек, Zero-GC
+│   ├── front/             # 7 органов, 8 предохранителей
+│   ├── polygon/           # 6 органов, арбитраж
+│   ├── growth/            # 6 органов, 5 предохранителей
+│   ├── stratos/           # 5 органов, WAL
+│   └── network/           # UDP-шлюз
+├── links/                 # Мостики
+├── cmd/organism/          # main.go, dashboard.go
+├── examples/              # simple, drone
+└── deploy/                # k8s, prometheus, grafana
+```
 
 ## Лицензия
 
