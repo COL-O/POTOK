@@ -5,9 +5,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/COL-O/POTOK/modules/bus"
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/polygon"
+	"organism/modules/bus"
+	"organism/modules/front"
+	"organism/modules/polygon"
 )
 
 // BlackSwanCase — историческая авария из stratos.

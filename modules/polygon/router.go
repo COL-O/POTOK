@@ -5,8 +5,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/COL-O/POTOK/modules/bus"
-	"github.com/COL-O/POTOK/modules/front"
+	"organism/modules/bus"
+	"organism/modules/front"
 )
 
 // Precedent — исторический прецедент из stratos.

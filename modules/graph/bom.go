@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
 )
 
 // BOMGraph — направленный граф BOM. Ребро parent → child означает

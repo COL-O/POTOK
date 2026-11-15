@@ -10,9 +10,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 
-	"github.com/COL-O/POTOK/contracts"
-	"github.com/COL-O/POTOK/modules/bim"
-	"github.com/COL-O/POTOK/modules/graph"
+	"organism/contracts"
+	"organism/modules/bim"
+	"organism/modules/graph"
 )
 
 // Projector — обратный BOM-проход с ограничениями BIM.

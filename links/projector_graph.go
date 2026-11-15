@@ -1,8 +1,8 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/modules/graph"
-	"github.com/COL-O/POTOK/modules/growth/projector"
+	"organism/modules/graph"
+	"organism/modules/growth/projector"
 )
 
 // ConnectProjectorGraph — мостик projector ↔ graph: projector строится

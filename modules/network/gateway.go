@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/COL-O/POTOK/modules/bus"
-	"github.com/COL-O/POTOK/modules/front"
+	"organism/modules/bus"
+	"organism/modules/front"
 )
 
 const (

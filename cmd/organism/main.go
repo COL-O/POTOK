@@ -12,12 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/COL-O/POTOK/modules/bus"
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/network"
-	"github.com/COL-O/POTOK/modules/polygon"
-	"github.com/COL-O/POTOK/modules/stratos"
+	"organism/modules/bus"
+	"organism/modules/front"
+	"organism/modules/growth"
+	"organism/modules/network"
+	"organism/modules/polygon"
+	"organism/modules/stratos"
 )
 
 type OrganismBridge struct {

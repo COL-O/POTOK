@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/COL-O/POTOK/modules/bus"
+	"organism/modules/bus"
 )
 
 // MmapSlotDescriptor описывает расположение весов тяжёлой модели в MmapRegion.

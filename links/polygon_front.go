@@ -1,9 +1,9 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/polygon"
+	"organism/core"
+	"organism/modules/front"
+	"organism/modules/polygon"
 )
 
 // ConnectPolygonFront — мостик polygon ↔ front: polygon публикует Antibody,

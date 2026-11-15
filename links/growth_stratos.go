@@ -1,9 +1,9 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/stratos"
+	"organism/core"
+	"organism/modules/growth"
+	"organism/modules/stratos"
 )
 
 // ConnectGrowthStratos — мостик growth ↔ stratos: growth публикует Suggestion,

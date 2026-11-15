@@ -1,8 +1,8 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/modules/bim"
-	"github.com/COL-O/POTOK/modules/growth/projector"
+	"organism/modules/bim"
+	"organism/modules/growth/projector"
 )
 
 // ConnectProjectorBIM — мостик projector ↔ bim: projector получает BIM

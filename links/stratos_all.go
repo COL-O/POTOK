@@ -1,8 +1,8 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/stratos"
+	"organism/core"
+	"organism/modules/stratos"
 )
 
 // ConnectStratosAll — мостик stratos ↔ все: stratos подписан на шине на

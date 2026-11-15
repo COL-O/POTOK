@@ -1,9 +1,9 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/polygon"
+	"organism/core"
+	"organism/modules/growth"
+	"organism/modules/polygon"
 )
 
 // ConnectPolygonGrowth — мостик polygon ↔ growth: polygon публикует Diagnosis,

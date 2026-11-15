@@ -10,9 +10,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/COL-O/POTOK/modules/bus"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/polygon"
+	"organism/modules/bus"
+	"organism/modules/growth"
+	"organism/modules/polygon"
 )
 
 // LawArchiveEntry — запись выведенного закона в долгой памяти.

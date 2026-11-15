@@ -3,7 +3,7 @@ package graph
 import (
 	"testing"
 
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
 )
 
 func products(ids ...uint32) []contracts.Product {

@@ -7,10 +7,10 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/COL-O/POTOK/contracts"
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/graph"
-	"github.com/COL-O/POTOK/modules/store"
+	"organism/contracts"
+	"organism/core"
+	"organism/modules/graph"
+	"organism/modules/store"
 )
 
 // Module — модуль слоя polygon.
