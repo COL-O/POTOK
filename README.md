@@ -19,4 +19,5 @@ go test ./...   # unit + сквозной тест цепочки front→polygo
 - Реестр моделей (7 органов, слои front / polygon / growth / stratos): [docs/registry/models-55.md](docs/registry/models-55.md)
 - Машиночитаемый реестр: [registry/models.yaml](registry/models.yaml)
 - Слои polygon / growth / stratos — наборы моделей и как они решают: [docs/layers/polygon-growth-stratos.md](docs/layers/polygon-growth-stratos.md)
-- Разборы и открытые вопросы: [docs/notes/review-01-models.md](docs/notes/review-01-models.md), [docs/notes/review-02-meaning-and-layers.md](docs/notes/review-02-meaning-and-layers.md)
+- КОНы и реестр концептов: [docs/concept/kons.md](docs/concept/kons.md), [docs/concept/concepts-index.md](docs/concept/concepts-index.md)
+- Разборы и открытые вопросы: [docs/notes/](docs/notes/) (review-01 … review-04)
