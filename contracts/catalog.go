@@ -1,22 +1,73 @@
 package contracts
 
-import "fmt"
-
-// FactoryRole — роль завода в организме.
-type FactoryRole string
-
-const (
-	RoleQuarry      FactoryRole = "quarry"
-	RoleShop        FactoryRole = "shop"
-	RoleAssembly    FactoryRole = "assembly"
-	RoleHospital300 FactoryRole = "hospital300"
-	RoleRecycler    FactoryRole = "recycler"
-	RoleWarehouse   FactoryRole = "warehouse"
+import (
+	"fmt"
+	"time"
 )
 
-func (r FactoryRole) String() string { return string(r) }
+// FactoryRole — роль завода.
+type FactoryRole uint8
 
-// ProductLayer — слой изделия: сырьё → узлы → подузлы → изделия.
+const (
+	RoleQuarry FactoryRole = iota
+	RoleShop
+	RoleAssembly
+	RoleHospital300
+	RoleRecycler
+	RoleWarehouse
+)
+
+func (r FactoryRole) String() string {
+	switch r {
+	case RoleQuarry:
+		return "quarry"
+	case RoleShop:
+		return "shop"
+	case RoleAssembly:
+		return "assembly"
+	case RoleHospital300:
+		return "hospital_300"
+	case RoleRecycler:
+		return "recycler"
+	case RoleWarehouse:
+		return "warehouse"
+	default:
+		return "unknown"
+	}
+}
+
+// Factory — завод в карте.
+type Factory struct {
+	Meta
+	ID     uint16      `json:"id"`
+	Code   string      `json:"code"`
+	Role   FactoryRole `json:"role"`
+	Region string      `json:"region"`
+	Active bool        `json:"active"`
+}
+
+func (f *Factory) Validate() error {
+	if err := f.Meta.Validate(); err != nil {
+		return err
+	}
+	if f.ID == 0 {
+		return fmt.Errorf("factory: id = 0")
+	}
+	if f.Code == "" {
+		return fmt.Errorf("factory: нет code")
+	}
+	if f.Role > RoleWarehouse {
+		return fmt.Errorf("factory: неизвестный role %d", f.Role)
+	}
+	if f.Region == "" {
+		return fmt.Errorf("factory: нет region")
+	}
+	return nil
+}
+
+func (f *Factory) IsHelp() bool { return true }
+
+// ProductLayer — слой изделия в DAG.
 type ProductLayer uint8
 
 const (
@@ -26,20 +77,49 @@ const (
 	LayerProduct
 )
 
-// ProductUnit — единица измерения изделия.
-type ProductUnit string
+func (l ProductLayer) String() string {
+	switch l {
+	case LayerRaw:
+		return "raw"
+	case LayerUnit:
+		return "unit"
+	case LayerSubassembly:
+		return "subassembly"
+	case LayerProduct:
+		return "product"
+	default:
+		return "unknown"
+	}
+}
 
-// Unit — короткое имя того же типа (использовалось в скелете).
-type Unit = ProductUnit
+// ProductUnit — единица измерения.
+type ProductUnit uint8
 
 const (
-	UnitKg  ProductUnit = "kg"
-	UnitPcs ProductUnit = "pcs"
+	UnitPcs ProductUnit = iota
+	UnitKg
+	UnitL
+	UnitM
 )
 
-// Product — изделие/сырьё общего поля («атом» мира, справочник изделий).
+func (u ProductUnit) String() string {
+	switch u {
+	case UnitPcs:
+		return "pcs"
+	case UnitKg:
+		return "kg"
+	case UnitL:
+		return "l"
+	case UnitM:
+		return "m"
+	default:
+		return "unknown"
+	}
+}
+
+// Product — изделие в справочнике.
 type Product struct {
-	Meta     Meta         `json:"meta"`
+	Meta
 	ID       uint32       `json:"id"`
 	SKU      string       `json:"sku"`
 	Layer    ProductLayer `json:"layer"`
@@ -48,10 +128,33 @@ type Product struct {
 	Active   bool         `json:"active"`
 }
 
-// BOMEdge — связь «родитель собирается из ребёнка» на конкретном заводе
-// («молекула»: как изделия собираются из деталей).
+func (p *Product) Validate() error {
+	if err := p.Meta.Validate(); err != nil {
+		return err
+	}
+	if p.ID == 0 {
+		return fmt.Errorf("product: id = 0")
+	}
+	if p.SKU == "" {
+		return fmt.Errorf("product: нет sku")
+	}
+	if p.Layer > LayerProduct {
+		return fmt.Errorf("product: неизвестный layer %d", p.Layer)
+	}
+	if p.Category == "" {
+		return fmt.Errorf("product: нет category")
+	}
+	if p.Unit > UnitM {
+		return fmt.Errorf("product: неизвестный unit %d", p.Unit)
+	}
+	return nil
+}
+
+func (p *Product) IsHelp() bool { return true }
+
+// BOMEdge — связь «из чего собирается».
 type BOMEdge struct {
-	Meta       Meta    `json:"meta"`
+	Meta
 	ParentID   uint32  `json:"parent_id"`
 	ChildID    uint32  `json:"child_id"`
 	FactoryID  uint16  `json:"factory_id"`
@@ -59,36 +162,84 @@ type BOMEdge struct {
 	TransitSec int32   `json:"transit_sec"`
 }
 
-// IsAdjacentLayer — BOM-связь допустима только между соседними слоями:
-// родитель ровно на слой выше ребёнка.
-func IsAdjacentLayer(parent, child ProductLayer) bool {
-	return parent == child+1
+func (e *BOMEdge) Validate() error {
+	if err := e.Meta.Validate(); err != nil {
+		return err
+	}
+	if e.ParentID == 0 {
+		return fmt.Errorf("bom: parent_id = 0")
+	}
+	if e.ChildID == 0 {
+		return fmt.Errorf("bom: child_id = 0")
+	}
+	if e.ParentID == e.ChildID {
+		return fmt.Errorf("bom: parent_id == child_id (%d)", e.ParentID)
+	}
+	if e.FactoryID == 0 {
+		return fmt.Errorf("bom: factory_id = 0")
+	}
+	if e.QtyPerUnit <= 0 {
+		return fmt.Errorf("bom: qty_per_unit <= 0 (%f)", e.QtyPerUnit)
+	}
+	if e.TransitSec < 0 {
+		return fmt.Errorf("bom: transit_sec < 0 (%d)", e.TransitSec)
+	}
+	return nil
 }
 
-// ValidateBOMChain — проверка цепочки BOM по каталогу изделий:
-// известные изделия, соседние слои, без самосвязей.
-// Проверка на цикл — отдельно (нужен граф, см. seed.validateDAG и modules/graph).
-func ValidateBOMChain(products []Product, edges []BOMEdge) error {
-	layerOf := make(map[uint32]ProductLayer, len(products))
-	for _, p := range products {
-		layerOf[p.ID] = p.Layer
+func (e *BOMEdge) IsHelp() bool { return true }
+
+// IsAdjacentLayer — проверка, что parent и child на соседних слоях.
+func IsAdjacentLayer(parent, child ProductLayer) bool {
+	if parent == child+1 {
+		return true
 	}
+	if parent == LayerProduct && child == LayerRaw {
+		return true
+	}
+	return false
+}
+
+// ValidateBOMChain — проверка цепочки BOM.
+func ValidateBOMChain(edges []BOMEdge, products map[uint32]Product) error {
 	for _, e := range edges {
-		parentLayer, ok := layerOf[e.ParentID]
+		parent, ok := products[e.ParentID]
 		if !ok {
-			return fmt.Errorf("%w: parent %d", ErrUnknownProduct, e.ParentID)
+			return fmt.Errorf("bom: parent %d не найден", e.ParentID)
 		}
-		childLayer, ok := layerOf[e.ChildID]
+		child, ok := products[e.ChildID]
 		if !ok {
-			return fmt.Errorf("%w: child %d", ErrUnknownProduct, e.ChildID)
+			return fmt.Errorf("bom: child %d не найден", e.ChildID)
 		}
-		if e.ParentID == e.ChildID {
-			return fmt.Errorf("%w: self edge on product %d", ErrBOMCycle, e.ParentID)
-		}
-		if !IsAdjacentLayer(parentLayer, childLayer) {
-			return fmt.Errorf("%w: %d (layer %d) -> %d (layer %d)",
-				ErrNonAdjacentLayer, e.ParentID, parentLayer, e.ChildID, childLayer)
+		if !IsAdjacentLayer(parent.Layer, child.Layer) {
+			return fmt.Errorf("bom: parent %d (layer %s) и child %d (layer %s) не соседние",
+				e.ParentID, parent.Layer, e.ChildID, child.Layer)
 		}
 	}
 	return nil
+}
+
+// ExampleFactory — пример завода (для тестов).
+func ExampleFactory(id uint16, code string, role FactoryRole, region string) Factory {
+	return Factory{
+		Meta:   Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, CreatedAt: time.Now(), Branch: "main"},
+		ID:     id,
+		Code:   code,
+		Role:   role,
+		Region: region,
+		Active: true,
+	}
+}
+
+// ExampleProduct — пример изделия (для тестов).
+func ExampleProduct(id uint32, sku string, layer ProductLayer, category string) Product {
+	return Product{
+		Meta:     Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, CreatedAt: time.Now(), Branch: "main"},
+		ID:       id,
+		SKU:      sku,
+		Layer:    layer,
+		Category: category,
+		Unit:     UnitPcs,
+		Active:   true,
+	}
 }
