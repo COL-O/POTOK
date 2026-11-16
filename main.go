@@ -74,11 +74,12 @@ func main() {
 	_ = reg.Register(growthMod, core.Manifest{Name: "growth", Role: core.RoleGrowth, Layer: core.LayerGrowth, Enabled: true})
 	_ = reg.Register(stratosMod, core.Manifest{Name: "stratos", Role: core.RoleMemory, Layer: core.LayerStratos, Enabled: true})
 
-	// Мостики через шину реестра.
-	links.ConnectPolygonFront(polygonMod, frontMod, reg.Bus())
-	links.ConnectPolygonGrowth(polygonMod, growthMod, reg.Bus())
-	links.ConnectGrowthStratos(growthMod, stratosMod, reg.Bus())
-	links.ConnectStratosAll(stratosMod, reg.Bus())
+	// Мостики через общую шину событий.
+	eventBus := core.NewEventBus()
+	links.ConnectPolygonFront(polygonMod, frontMod, eventBus)
+	links.ConnectPolygonGrowth(polygonMod, growthMod, eventBus)
+	links.ConnectGrowthStratos(growthMod, stratosMod, eventBus)
+	links.ConnectStratosAll(stratosMod, eventBus)
 	links.ConnectFrontParquet(frontMod, st)
 
 	// 8. Старт.
