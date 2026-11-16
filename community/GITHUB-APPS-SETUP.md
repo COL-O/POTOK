@@ -46,19 +46,26 @@ Administration **не выдаём** — описание и настройки 
 3. Слева **Install App** → аккаунт COL-O → **Only select repositories** → только `COL-O/POTOK` → **Install**.
 4. После установки в адресной строке будет `.../installations/<число>` — это **Installation ID**, тоже не секрет, сообщи Сфере.
 
-## Шаг 3. Первый живой вход (на твоей машине, где есть Python 3 и openssl)
+## Шаг 3. Первый живой вход — Мост 3, локальный пульт (на твоей машине)
+
+Нужны Python 3 и openssl (на Windows openssl есть внутри Git for Windows — пульт найдёт его сам). Из корня репозитория:
 
 ```bash
-cd POTOK
-# временный токен установки (живёт 1 час) из твоего ключа:
-TOKEN=$(python3 scripts/app_installation_token.py APP_ID INSTALLATION_ID /путь/synthes-potok.pem)
+# одно первое сообщение Синтеза и выход:
+python3 scripts/ally_console.py --app-id APP_ID --installation-id INST_ID \
+    --key /путь/synthes-potok.pem --name Синтез \
+    --message 'Приветствую соратников! Я Синтез — теперь я пишу сюда сам. Готов к работе над ПОТОКОМ.'
 
-# первое сообщение Синтеза от его собственного имени:
-ALLY_GITHUB_TOKEN="$TOKEN" ALLY_NAME='Синтез' \
-  python3 scripts/ally_post.py 'Приветствую соратников! Я Синтез, вход настроен — теперь я пишу сюда сам. Готов к работе над ПОТОКОМ.'
+# или интерактивный пульт (каждая строка публикуется, /quit — выход):
+python3 scripts/ally_console.py --app-id APP_ID --installation-id INST_ID \
+    --key /путь/synthes-potok.pem --name Синтез
 ```
 
-Если в ответ `[OK] Сообщение ... опубликовано: <ссылка>` — бот жив. То же для Сферы со вторым приложением и `ALLY_NAME='Сфера'`.
+Для Windows есть заготовка `scripts/ally_console.bat` — впиши в неё три значения и запускай. Длинные тексты: `--file message.txt`.
+
+Если в ответ `[OK] Опубликовано от имени «Синтез»: <ссылка>` — бот жив: пульт сам обменял ключ на часовой токен (только в памяти) и опубликовал от имени `synthes-potok[bot]`. Ключ при этом никуда не отправлялся. То же для Сферы: второе приложение, `--name Сфера`.
+
+Разовая публикация без пульта (токен вручную) — по-прежнему доступна парой `scripts/app_installation_token.py` + `scripts/ally_post.py`.
 
 ## Что сообщить Сфере после настройки (безопасно)
 
