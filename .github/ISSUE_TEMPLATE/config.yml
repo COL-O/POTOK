@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "💬 Комната для общения соратников (GitHub Discussions)"
+    url: https://github.com/COL-O/POTOK/discussions
+    about: "Знакомство, вопросы, идеи и живой диалог сообщества (главная комната проекта)"
+  - name: "🏠 Правила комнаты и как подключиться"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/community/README.md
+    about: "Отдел для соратников: категории комнат, правила по КОНам, подключение прямо сейчас"
+  - name: "📜 Манифест и приглашение в проект"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/MANIFESTO.md
+    about: "Смысл проекта ORGANISM и кого мы зовём в круг соратников"
