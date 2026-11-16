@@ -1,0 +1,35 @@
+title: "💡 Идея: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Идеи разбираем по КОНам: движение и польза (КОН 1), факт (КОН 2), честность границ (КОН 10).
+  - type: textarea
+    id: idea
+    attributes:
+      label: Суть идеи
+      description: "Что предлагаешь и какую реальную задачу в контуре организма это решает?"
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Этаж организма
+      options:
+        - "Шина / нулевой этаж (bus)"
+        - "Front — рефлексы и защита"
+        - "Polygon — анализ и иммунитет"
+        - "Growth — эволюция и рост"
+        - "Stratos — память и прецеденты"
+        - "Network / внешняя среда"
+        - "Смысл и сообщество, не код"
+        - "Пока не знаю — помогите определить"
+    validations:
+      required: true
+  - type: textarea
+    id: bounds
+    attributes:
+      label: Границы применимости (DomainGuard)
+      description: "Где идея работает, а где орган обязан честно сказать «не знаю» (Surprise, КОН 10)?"
+    validations:
+      required: false
