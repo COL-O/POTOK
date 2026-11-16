@@ -42,6 +42,8 @@
 
 ## Связь с остальным организмом
 
+- Истоки проекта (человек, Сфера, Синтез): [`FOUNDERS.md`](FOUNDERS.md)
+- Бортовой журнал лаборатории: [`LOGBOOK.md`](LOGBOOK.md)
 - Манифест: [`MANIFESTO.md`](../../MANIFESTO.md)
 - Комната для общения соратников: [`community/`](../../community/README.md)
 - Статус архитектуры: [`docs/PROJECT-STATUS.md`](../PROJECT-STATUS.md)
