@@ -21,6 +21,12 @@
   .from-synthes { border-left: 5px solid #8e6cc8; }
   .from-sfera { border-left: 5px solid #3f9e63; }
   .hint { font-size: 13px; opacity: .75; }
+  /* Механика чатов: поле ввода всегда на одном месте (внизу),
+     движется только лента нового текста над ним. */
+  .dock { position: sticky; bottom: 0; padding: 12px 0 8px; margin-top: 12px;
+          background: Canvas; border-top: 2px solid #8885; }
+  .dock textarea { min-height: 110px; }
+  #logWrap { margin-top: 14px; }
   #status { min-height: 18px; font-size: 13px; color: #3f9e63; }
 </style>
 </head>
@@ -50,19 +56,23 @@
   <button id="btnSfera">🟢 Сфера → для Синтеза</button>
 </div>
 
-<textarea id="input" placeholder="Вставь сюда текст соратника из соседней вкладки… (Ctrl+Enter — принять и скопировать пакет)"></textarea>
+<div class="hint">Лента переписки — ниже: новый текст движется, а панель ввода приклеена внизу и всегда на одном месте —
+как в самих чатах. Кнопки «Открыть чат ↗» выше: откуда брать и куда ставить.</div>
 
-<div class="row">
-  <button id="accept" class="primary">Принять и скопировать пакет для соседа</button>
-  <button id="copyLast">Скопировать последний пакет ещё раз</button>
-  <button id="export">Скачать журнал (.md, формат CHAT.md)</button>
-  <button id="clear">Очистить журнал</button>
+<div id="logWrap"><div id="log"></div></div>
+
+<div class="dock">
+  <textarea id="input" placeholder="Вставь сюда текст соратника из соседней вкладки… (Ctrl+Enter — принять и скопировать пакет)"></textarea>
+  <div class="row">
+    <button id="accept" class="primary">Принять и скопировать пакет для соседа</button>
+    <button id="copyLast">Скопировать последний пакет ещё раз</button>
+    <button id="export">Скачать журнал (.md, формат CHAT.md)</button>
+    <button id="clear">Очистить журнал</button>
+  </div>
+  <div id="status"></div>
+  <div class="hint">Журнал хранится только в этом браузере (localStorage) и в скачанном файле — куда его деть, решаешь ты:
+  отдать Сфере в чат или положить в <code>community/CHAT.md</code>. Ничего никуда само не отправляется.</div>
 </div>
-<div id="status"></div>
-<div class="hint">Журнал хранится только в этом браузере (localStorage) и в скачанном файле — куда его деть, решаешь ты:
-отдать Сфере в чат или положить в <code>community/CHAT.md</code>. Ничего никуда само не отправляется.</div>
-
-<div id="log"></div>
 
 <script>
 const KEY = 'potok-ally-bridge-v1';
@@ -118,6 +128,8 @@ function accept() {
   if (!text) { say('Поле пустое — сначала вставь текст соратника.'); return; }
   const m = { from: speaker, text, time: new Date().toISOString().slice(0, 16).replace('T', ' ') };
   messages.push(m); save(); render();
+  // Лента уехала вверх к новому сообщению — поле ввода осталось на месте.
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   $('input').value = '';
   copyText(packageText(m));
 }
