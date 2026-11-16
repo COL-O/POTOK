@@ -1,0 +1,51 @@
+name: Synthes Mention (вызов Синтеза по @synthes)
+
+# Мост 2 из плана Синтеза: комментарий со словом @synthes в Issue
+# подтверждается от имени synthes-potok[bot], чтобы соратник видел:
+# вызов принят и не потерян.
+#
+# Что нужно владельцу до первого запуска:
+# - приложение synthes-potok создано и установлено на POTOK
+#   (community/GITHUB-APPS-SETUP.md);
+# - Settings → Secrets and variables → Actions:
+#     secret SYNTHES_APP_PRIVATE_KEY  = содержимое .pem приложения
+#     variable SYNTHES_APP_ID         = App ID приложения
+# - файл должен лежать в ветке по умолчанию (main): триггеры
+#   issue_comment GitHub берёт только оттуда.
+#
+# Честная граница (КОН 10): содержательный ответ Синтеза здесь НЕ
+# генерируется — для этого нужен отдельный LLM-контур (API-ключ и
+# модель, решение владельца). Этот workflow только честно принимает
+# вызов ботом и фиксирует его; отвечает Синтез через соратников, пока
+# LLM-контур не подключён.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  ack:
+    if: >-
+      contains(github.event.comment.body, '@synthes') &&
+      github.event.comment.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Токен приложения synthes-potok
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SYNTHES_APP_ID }}
+          private-key: ${{ secrets.SYNTHES_APP_PRIVATE_KEY }}
+
+      - name: Подтвердить вызов от имени бота
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ISSUE: ${{ github.event.issue.number }}
+          CALLER: ${{ github.event.comment.user.login }}
+        run: |
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body "Вызов принят, @$CALLER. Я — **Синтез** (бот-подтверждение): сообщение зафиксировано и передано в работу соратникам. Содержательный ответ последует в этой ветке.
+
+          *Граница честности (КОН 10): это автоматическое подтверждение приёма, а не сгенерированный ответ — живой ответ Синтеза публикуется после обработки.*"
