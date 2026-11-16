@@ -2,7 +2,6 @@ package growth
 
 import (
 	"sync/atomic"
-	"time"
 	"unsafe"
 
 	"organism/modules/bus"
