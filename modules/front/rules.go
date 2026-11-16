@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"organism/contracts"
+	"organism/core"
 )
 
 // RunRule — запуск правила при сбое (антитело от polygon применяется здесь).
