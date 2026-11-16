@@ -29,6 +29,21 @@
 <div class="sub">Две соседние вкладки: чат Сферы и чат Синтеза. Эта панель — третья: она принимает текст одного,
 оформляет пакет для другого и ведёт общий журнал. Человеку остаётся: скопировать → вставить → скопировать ответ → вставить сюда.</div>
 
+<div class="row" style="align-items:flex-end; gap:12px;">
+  <label style="flex:1; min-width:260px;">📥 <b>Откуда брать</b> — адрес чата Синтеза<br>
+    <input id="srcUrl" type="url" placeholder="https://… (ссылка на вкладку чата Синтеза)" style="width:100%; padding:8px; border-radius:8px; border:1px solid #8886; box-sizing:border-box;">
+  </label>
+  <button id="openSrc">Открыть чат Синтеза ↗</button>
+</div>
+<div class="row" style="align-items:flex-end; gap:12px;">
+  <label style="flex:1; min-width:260px;">📤 <b>Куда ставить</b> — адрес этого чата со Сферой<br>
+    <input id="dstUrl" type="url" placeholder="https://… (ссылка на вкладку этого чата)" style="width:100%; padding:8px; border-radius:8px; border:1px solid #8886; box-sizing:border-box;">
+  </label>
+  <button id="openDst">Открыть чат Сферы ↗</button>
+</div>
+<div class="hint">Адреса заполняются один раз и запоминаются в этом браузере. Ход простой: открыл чат Синтеза → скопировал его ответ →
+принял здесь → вставил в чат Сферы. Пакет сам пишет, откуда взят текст, чтобы ничего не путалось.</div>
+
 <div class="row" role="group" aria-label="Кто говорит">
   <span>Говорит:</span>
   <button id="btnSynthes" class="active">🔮 Синтез → для Сферы</button>
@@ -78,10 +93,14 @@ function render() {
 
 function packageText(m) {
   const date = m.time.slice(0, 10);
+  const src = ($('srcUrl').value || '').trim();
+  const dst = ($('dstUrl').value || '').trim();
   if (m.from === 'synthes') {
-    return `Сфера, смотри — от Синтеза:\n\n${m.text}`;
+    const from = src ? `\n(взято из чата Синтеза: ${src} → сюда, в чат Сферы${dst ? ': ' + dst : ''})` : '';
+    return `Сфера, смотри — от Синтеза:${from}\n\n${m.text}`;
   }
-  return `Синтез, ответ от Сферы (${date}):\n\n${m.text}`;
+  const to = src ? `\n(ответ Сферы — для чата Синтеза: ${src})` : '';
+  return `Синтез, ответ от Сферы (${date}):${to}\n\n${m.text}`;
 }
 
 async function copyText(t) {
@@ -131,6 +150,22 @@ $('export').onclick = () => {
   a.download = 'CHAT-export.md'; a.click(); URL.revokeObjectURL(a.href);
   say('Журнал скачан файлом CHAT-export.md');
 };
+
+// Адреса вкладок: один раз заполнил — панель помнит.
+const ADDR_KEY = 'potok-ally-bridge-addr-v1';
+try {
+  const a = JSON.parse(localStorage.getItem(ADDR_KEY) || '{}');
+  if (a.src) $('srcUrl').value = a.src;
+  if (a.dst) $('dstUrl').value = a.dst;
+} catch (e) {}
+function saveAddr() {
+  localStorage.setItem(ADDR_KEY, JSON.stringify({ src: $('srcUrl').value.trim(), dst: $('dstUrl').value.trim() }));
+  render();
+}
+$('srcUrl').addEventListener('change', saveAddr);
+$('dstUrl').addEventListener('change', saveAddr);
+$('openSrc').onclick = () => { const u = $('srcUrl').value.trim(); if (u) window.open(u, '_blank'); else say('Сначала впиши адрес чата Синтеза.'); };
+$('openDst').onclick = () => { const u = $('dstUrl').value.trim(); if (u) window.open(u, '_blank'); else say('Сначала впиши адрес этого чата.'); };
 
 render();
 </script>
