@@ -19,7 +19,23 @@ jobs:
           go-version: "1.22"
 
       - name: Run Tests with Race Detector
-        run: go test -v -race ./...
+        run: go test -v -race ./... 2>&1 | tee test-output.txt
+
+      - name: Upload test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output.txt
+          retention-days: 7
 
       - name: Verify Build
-        run: go build -v ./...
+        run: go build -v ./... 2>&1 | tee build-output.txt
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: build-output.txt
+          retention-days: 7
