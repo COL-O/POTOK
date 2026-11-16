@@ -1,0 +1,25 @@
+name: POTOK Immune Check (CI)
+
+on:
+  push:
+    branches: [main, "arena/3bbbb51d-potok"]
+  pull_request:
+    branches: [main, "arena/3bbbb51d-potok"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Run Tests with Race Detector
+        run: go test -v -race ./...
+
+      - name: Verify Build
+        run: go build -v ./...
