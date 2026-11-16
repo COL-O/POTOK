@@ -36,36 +36,10 @@ func (r FactoryRole) String() string {
 	}
 }
 
-// Factory — завод в карте.
-type Factory struct {
-	Meta
-	ID     uint16      `json:"id"`
-	Code   string      `json:"code"`
-	Role   FactoryRole `json:"role"`
-	Region string      `json:"region"`
-	Active bool        `json:"active"`
-}
-
-func (f *Factory) Validate() error {
-	if err := f.Meta.Validate(); err != nil {
-		return err
-	}
-	if f.ID == 0 {
-		return fmt.Errorf("factory: id = 0")
-	}
-	if f.Code == "" {
-		return fmt.Errorf("factory: нет code")
-	}
-	if f.Role > RoleWarehouse {
-		return fmt.Errorf("factory: неизвестный role %d", f.Role)
-	}
-	if f.Region == "" {
-		return fmt.Errorf("factory: нет region")
-	}
-	return nil
-}
-
-func (f *Factory) IsHelp() bool { return true }
+// Factory — завод в организме: каноническое определение в factory.go
+// (расширенная структура). Здесь не дублируется: лёгкая версия из первой
+// редакции каталога снята при подготовке к первому запуску, чтобы пакет
+// собирался; все использования (seed, growth) опираются на расширенную.
 
 // ProductLayer — слой изделия в DAG.
 type ProductLayer uint8
