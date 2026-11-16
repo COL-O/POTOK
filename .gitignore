@@ -26,3 +26,8 @@ Thumbs.db
 
 # Docker
 .docker/
+
+# Секреты соратников-ботов: ключи и токены не коммитятся никогда
+*.pem
+ALLY_GITHUB_TOKEN
+community/ISSUE4_LIVE.md
