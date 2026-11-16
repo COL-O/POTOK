@@ -15,4 +15,5 @@ fi
 MSG="$1"
 
 git commit -m "$MSG" -m "Co-authored-by: Synthes <synthes@potok.local>
-Co-authored-by: Sfera <sfera@potok.local>"
+Co-authored-by: Sfera <sfera@potok.local>
+Co-authored-by: ruslo <ruslo@potok.local>"
