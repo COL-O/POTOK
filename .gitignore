@@ -1,5 +1,28 @@
-# Локальные данные и бинарники организма не коммитятся
-/data/
+# Бинарники и артефакты сборки
+bin/
 *.exe
+*.test
+*.out
 /potok
 /POTOK
+/organism
+
+# Данные организма и журналы (не коммитятся)
+/data/
+*.wal
+*.log
+
+# Покрытие и профили
+coverage.out
+*.prof
+
+# Кэши и служебное
+.cache/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
