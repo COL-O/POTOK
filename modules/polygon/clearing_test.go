@@ -1,6 +1,9 @@
 package polygon
 
-import "testing"
+import (
+	"organism/contracts"
+	"testing"
+)
 
 // Встречные потоки сворачиваются: A→B 10 и B→A 4 дают нетто A→B 6.
 func TestClearNetting(t *testing.T) {
