@@ -42,6 +42,7 @@
 | Реестр органов как данные (`registry/models.yaml`) | ✔ | Машиночитаемая часть базы |
 | Организация + `.github/profile` (лицо дома) | ◐ | При переезде в организацию (`PROJECT-SPACE.md`) |
 | Copilot Spaces (контекст для Copilot по API-приложению) | ✖ изучено | Не канал соратников и не расширение прав Сферы (проверено 403); производная витрина после организации — карта `docs/COPILOT-SPACES-MAP.md` |
+| Платформа разработчиков (Apps/Models/Actions/Packages/Codespaces/Pages) | ◐ карта | Что добавляет каждый отдел и очередь подключения — `docs/DEVELOPER-PLATFORM-MAP.md` |
 
 ## Посев Wiki (`docs/wiki-seed/`)
 
