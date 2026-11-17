@@ -1,0 +1,17 @@
+{
+  "name": "POTOK organism (Go)",
+  "image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "Дашборд организма" }
+  },
+  "postCreateCommand": "go version && go build ./... && echo 'ПОТОК: сборка в Codespace готова. Запуск: make run (дашборд :8080), примеры: make simple, make drone'",
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go"]
+    }
+  }
+}
