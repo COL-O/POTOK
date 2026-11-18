@@ -5,7 +5,7 @@ import { Parser, Language } from 'web-tree-sitter';
 
 const root = path.resolve(process.argv[2] || '.');
 await Parser.init();
-const lang = await Language.load(path.join(process.cwd(), 'node_modules/tree-sitter-wasms/out/tree-sitter-go.wasm'));
+const lang = await Language.load(path.join(process.env.GOCHECK_HOME || process.cwd(), 'node_modules/tree-sitter-wasms/out/tree-sitter-go.wasm'));
 const parser = new Parser(); parser.setLanguage(lang);
 
 const files = [];

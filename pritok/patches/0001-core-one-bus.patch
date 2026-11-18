@@ -1,0 +1,43 @@
+# Патч 0001 — одна шина на организм (core/registry.go)
+#
+# Адрес: core/registry.go — `env := &Env{Registry: r, Bus: NewEventBus()}` (в доме на 5374239: строка 63).
+# Причина: шина создавалась внутри цикла StartAll, то есть НА КАЖДЫЙ модуль своя.
+#   main.go при этом создаёт общий eventBus и передаёт его в links.Connect*, а те — заглушки
+#   (`_ = bus`). Итог: front.Publish уходит в шину, о которой polygon не знает, адресат
+#   по Targets не находится, FlightStuck не рождается — сквозная цепочка
+#   front→polygon→growth→stratos пройти не может (TestOrganismChainOnStuckFlight,
+#   корневой интеграционный тест).
+# Правка: шина — поле реестра, создаётся в NewRegistry, всем модулям отдаётся одна.
+# Проверено: чтение кода + gocheck на клоне дома (синтаксис/имена/арность/дубли) — чисто.
+# НЕ проверено: `go test -race ./...` в песочнице невозможен (Go нет). Скажет прогон у основателя или CI.
+# Применение из корня дома:
+#   git apply --check pritok/patches/0001-core-one-bus.patch && git apply pritok/patches/0001-core-one-bus.patch
+#   go build ./... && go test -race ./...
+--- a/core/registry.go
++++ b/core/registry.go
+@@ -21,12 +21,16 @@ type registry struct {
+ 	modules   map[string]Module
+ 	manifests map[string]Manifest
+ 	order     []string
++	// bus — общее поле организма: одна шина на всех. Раньше шина создавалась
++	// внутри StartAll на каждый модуль, и модули не слышали друг друга.
++	bus EventBus
+ }
+ 
+ func NewRegistry() Registry {
+ 	return &registry{
+ 		modules:   make(map[string]Module),
+ 		manifests: make(map[string]Manifest),
++		bus:       NewEventBus(),
+ 	}
+ }
+ 
+@@ -60,7 +64,7 @@ func (r *registry) StartAll(ctx context.Context) error {
+ 		if !manifest.Enabled {
+ 			continue
+ 		}
+-		env := &Env{Registry: r, Bus: NewEventBus()}
++		env := &Env{Registry: r, Bus: r.bus}
+ 		if err := m.Init(ctx, env); err != nil {
+ 			return fmt.Errorf("Init %q: %w", name, err)
+ 		}

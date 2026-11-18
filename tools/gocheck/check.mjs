@@ -12,7 +12,7 @@ const modName = fs.readFileSync(path.join(root, 'go.mod'), 'utf8').match(/^modul
 const STD = new Set(['context','fmt','errors','sort','strings','sync','time','os','io','json','testing','log','math','strconv','regexp','bytes','bufio','http','filepath','crypto','sha256','hex','encoding','net','reflect','runtime','unicode','path','flag','atomic','rand','signal']);
 
 await Parser.init();
-const lang = await Language.load(path.join(process.cwd(), 'node_modules/tree-sitter-wasms/out/tree-sitter-go.wasm'));
+const lang = await Language.load(path.join(process.env.GOCHECK_HOME || process.cwd(), 'node_modules/tree-sitter-wasms/out/tree-sitter-go.wasm'));
 const parser = new Parser();
 parser.setLanguage(lang);
 
@@ -43,6 +43,30 @@ for (const f of files) {
 
   const imports = new Map();
   const usedAliases = new Set();
+  // Локальные имена (в т.ч. переменные, названные как пакет: store, stratos),
+  // объявленные в файле через := или var — это не обращения к пакету.
+  const localNames = new Set();
+  (function collectLocals(n) {
+    if (n.type === 'short_var_declaration') {
+      const left = n.childForFieldName('left');
+      for (const id of (left ? left.children : [])) {
+        if (id.type === 'identifier') localNames.add(id.text);
+      }
+    }
+    if (n.type === 'var_spec') {
+      const nm = n.childForFieldName('name');
+      if (nm) localNames.add(nm.text);
+      for (const id of n.children) if (id.type === 'identifier') localNames.add(id.text);
+    }
+    if (n.type === 'parameter_declaration') {
+      for (const id of n.children) if (id.type === 'identifier') localNames.add(id.text);
+    }
+    if (n.type === 'assignment_statement') {
+      const left = n.childForFieldName('left');
+      for (const id of (left ? left.children : [])) if (id.type === 'identifier') localNames.add(id.text);
+    }
+    for (const ch of n.children) collectLocals(ch);
+  })(tree.rootNode);
   for (const c of tree.rootNode.children) {
     if (c.type !== 'import_declaration') continue;
     const specs = [];
@@ -78,6 +102,19 @@ for (const f of files) {
             }
           }
         }
+        // встроенные поля (Meta, Embedded) — тоже поля структуры
+        for (const fl of ty.children) {
+          if (fl.type !== 'field_declaration_list') continue;
+          for (const f of fl.children) {
+            if (f.type !== 'field_declaration') continue;
+            for (const id of f.children) {
+              if (['type_identifier', 'qualified_type', 'generic_type'].includes(id.type)) {
+                const name = id.text.includes('.') ? id.text.split('.').pop() : id.text;
+                set.add(name);
+              }
+            }
+          }
+        }
         structs.set(tn.text, set);
       }
     }
@@ -108,11 +145,12 @@ for (const f of files) {
       if (op && fld) {
         usedAliases.add(op.text);
         const im = imports.get(op.text);
+        const shadowed = !im && (localNames.has(op.text) || ![...pkg.values()].some((x) => x.name === op.text));
         if (im && im.ip.includes('.')) {
           const p = pkg.get(im.ip);
           if (p && p.exported.size && !p.exported.has(fld.text))
             problems.push(`${rel}:${n.startPosition.row+1} ${op.text}.${fld.text} — нет такого имени в ${im.ip}`);
-        } else if (!im && [...pkg.values()].some((x) => x.name === op.text)) {
+        } else if (!im && !shadowed && [...pkg.values()].some((x) => x.name === op.text)) {
           problems.push(`${rel}:${n.startPosition.row+1} ${op.text}.${fld.text} — пакет «${op.text}» не импортирован`);
         }
       }
@@ -127,7 +165,7 @@ for (const f of files) {
           const p = pkg.get(im.ip);
           if (p && p.exported.size && !p.exported.has(fld.text))
             problems.push(`${rel}:${n.startPosition.row+1} ${op.text}.${fld.text} — нет такого имени в ${im.ip}`);
-        } else if (!im) {
+        } else if (!im && !localNames.has(op.text)) {
           // идентификатор похож на пакет репозитория/стандартной библиотеки, но не импортирован
           if ([...pkg.values()].some((x) => x.name === op.text) || STD.has(op.text))
             problems.push(`${rel}:${n.startPosition.row+1} ${op.text}.${fld.text} — пакет «${op.text}» не импортирован`);
