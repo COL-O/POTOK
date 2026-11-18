@@ -68,3 +68,4 @@ for (const f of files) {
   tree.delete();
 }
 console.log(`\nПроблем с числом аргументов: ${problems}`);
+process.exit(problems ? 1 : 0);

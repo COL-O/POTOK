@@ -13,7 +13,11 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
-root="$(cd "$here/../.." && pwd)"
+# путь к проверяемому коду: аргумент либо переменная окружения.
+# Раньше root был жёстко «../..», и прогон по чужому клону молча проверял
+# сам POTOK — то есть «проверено» врало (найдено 2026-11-18).
+root="${1:-${GOCHECK_TARGET:-$here/../..}}"
+root="$(cd "$root" && pwd)"
 
 if ! command -v node >/dev/null 2>&1; then
   echo "нужен node (не найден в PATH)" >&2
@@ -25,10 +29,15 @@ if [ ! -d "$here/node_modules/web-tree-sitter" ]; then
   ( cd "$here" && npm init -y >/dev/null 2>&1 && npm install --no-audit --no-fund --silent web-tree-sitter@0.25.10 tree-sitter-wasms )
 fi
 
+# Каждый скрипт обязан возвращать ненулевой код, когда нашёл проблему,
+# иначе check.sh — не проверка, а отчёт «всё хорошо».
 status=0
 for script in parse.mjs check.mjs idents.mjs dup.mjs arity.mjs; do
   echo "[gocheck] $script"
-  ( cd "$here" && node "$script" "$root" ) || status=1
+  if ! ( cd "$here" && node "$script" "$root" ); then
+    echo "[gocheck] $script: ЕСТЬ ПРОБЛЕМЫ (код ненулевой)" >&2
+    status=1
+  fi
 done
 
 echo "[gocheck] готово (код выхода $status)"

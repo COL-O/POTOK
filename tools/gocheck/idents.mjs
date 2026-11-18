@@ -46,11 +46,15 @@ for (const f of files) {
   tree.delete();
 }
 
+let problems = 0;
 for (const [dir, rec] of packages) {
   const unknown = rec.uses.filter((u) => !rec.declared.has(u.name) && !BUILTIN.has(u.name));
   if (unknown.length) {
+    problems += unknown.length;
     const uniq = [...new Map(unknown.map((u) => [u.name + '@' + u.rel + ':' + u.line, u])).values()];
     console.log(`# ${dir || '.'}`);
     for (const u of uniq.slice(0, 12)) console.log(`  ${u.rel}:${u.line} ${u.name} (${u.parent})`);
   }
 }
+console.log(`\nНеизвестных имён: ${problems}`);
+process.exit(problems ? 1 : 0);

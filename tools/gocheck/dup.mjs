@@ -59,3 +59,4 @@ for (const [dir, list] of merged) {
   }
 }
 console.log(`\nДублей объявлений: ${problems}`);
+process.exit(problems ? 1 : 0);
