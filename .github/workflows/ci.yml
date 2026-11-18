@@ -19,6 +19,7 @@ jobs:
           go-version: "1.22"
 
       - name: Run Tests with Race Detector
+        shell: bash
         run: go test -v -race ./... 2>&1 | tee test-output.txt
 
       - name: Upload test output on failure
@@ -30,6 +31,7 @@ jobs:
           retention-days: 7
 
       - name: Verify Build
+        shell: bash
         run: go build -v ./... 2>&1 | tee build-output.txt
 
       - name: Upload build output on failure
