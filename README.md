@@ -1,5 +1,11 @@
 # POTOK — Единый индустриальный организм
 
+[![Иммунитет](https://github.com/COL-O/POTOK/actions/workflows/ci.yml/badge.svg?branch=arena%2F3bbbb51d-potok)](https://github.com/COL-O/POTOK/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/COL-O/POTOK/actions/workflows/codeql.yml/badge.svg?branch=arena%2F3bbbb51d-potok)](https://github.com/COL-O/POTOK/actions/workflows/codeql.yml)
+[![Wiki](https://img.shields.io/badge/Wiki-база_знаний-brightgreen)](https://github.com/COL-O/POTOK/wiki)
+
+**Карта дома:** [`HOUSE.md`](HOUSE.md) — комнаты, гостиная, библиотека, инструментальная. Гостям: [`community/GUESTS.md`](community/GUESTS.md). Цифровым соратникам вход: [`AGENTS.md`](AGENTS.md).
+
 **POTOK** — вычислительная архитектура реального времени на Go, реализующая паттерн **MoE-организма**: вместо одной гигантской модели — **24 активных органа** разной вычислительной природы, объединённых **общим полем** (Типизированная Шина) и **четырьмя контурами времени**.
 
 ## Открытый проект — присоединяйтесь
