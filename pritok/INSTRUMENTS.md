@@ -68,7 +68,7 @@ node pritok/tools/docfact.mjs --branch origin/main
 
 Находки на 2026-11-18 (дом, `5374239`): расхождений 2 из 10 проверок.
 
-## 4а. Патчи — `pritok/patches/` (5 штук, применяются по порядку)
+## 4а. Патчи — `pritok/patches/` (6 штук, применяются по порядку)
 
 | Патч | Что закрывает | `git apply --check` |
 |---|---|---|
@@ -77,8 +77,9 @@ node pritok/tools/docfact.mjs --branch origin/main
 | `0003-seed-created-at.patch` | `CreatedAt` в Meta завода (`modules/seed`) | OK |
 | `0004-stratos-wal-durability.patch` | `Write`+`Sync`, видимая ошибка WAL (`modules/stratos/store.go`) | OK |
 | `0005-links-real-wiring.patch` | мостики вместо заглушек, шина до реестра (`links/*`, `main.go`, `core`) | OK |
+| `0006-front-quarantine-and-status.patch` | кварантин при равной уверенности: `>` → `>=` (`modules/front/router.go:311`) | OK |
 
-Проверено: все пять применяются **вместе** на чистом клоне дома (`dadb5fd`), после чего
+Проверено: все шесть применяются **вместе** на чистом клоне дома (`dadb5fd`), после чего
 `gocheck` чист (114 файлов, 29 пакетов, 0 проблем).
 НЕ проверено: `go test -race ./...` — Go нет. Ни один патч не назван «работает».
 
