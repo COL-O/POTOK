@@ -3,3 +3,6 @@
 *.exe
 /potok
 /POTOK
+
+# node_modules статического чекера (ставится локально)
+/tools/gocheck/node_modules/

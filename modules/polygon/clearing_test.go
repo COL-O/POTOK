@@ -1,6 +1,10 @@
 package polygon
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/COL-O/POTOK/contracts"
+)
 
 // Встречные потоки сворачиваются: A→B 10 и B→A 4 дают нетто A→B 6.
 func TestClearNetting(t *testing.T) {

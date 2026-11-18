@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/COL-O/POTOK/contracts"
+	"github.com/COL-O/POTOK/core"
 )
 
 // RunRule — запуск правила при сбое (антитело от polygon применяется здесь).
