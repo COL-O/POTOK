@@ -1,10 +1,3 @@
-# Бинарники и артефакты сборки
-bin/
-*.exe
-*.test
-*.out
-/potok
-/POTOK
 /organism
 
 # Данные организма и журналы (не коммитятся)
@@ -31,3 +24,9 @@ Thumbs.db
 *.pem
 ALLY_GITHUB_TOKEN
 community/ISSUE4_LIVE.md
+
+# node_modules статического чекера (ставится локально)
+/pritok/tools/gocheck/node_modules/
+
+# зависимости статического чекера
+/node_modules/

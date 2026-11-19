@@ -1,0 +1,97 @@
+# Патч 0004 — WAL: долговечность и видимая ошибка (modules/stratos/store.go)
+#
+# Адрес: modules/stratos/store.go — appendWALRecord (в доме на 5374239: строка 225), Close, поля Store.
+# Причина 1: appendWALRecord делал `_, _ = s.walFile.Write(frame[:])` — результат записи
+#   игнорировался. Если диск заполнен или файл отвалился, память считала запись успешной,
+#   а журнала не было. Для стража прецедентов это тихая потеря, а не сбой.
+# Причина 2: после Write не было Sync. Запись уходит в кэш страниц и теряется при падении
+#   процесса/машины. Практика (LSM/WAL, ARIES, append-only логи): байты не считаются
+#   доехавшими, пока не сделан fsync; «write() буферизует, fsync заставляет» — это не
+#   мои слова, а общий консенсус источников (см. findings/2026-11-18-network-and-store.md).
+# Правка: Write+Sync, первая ошибка сохраняется в walErr, есть WALError() и Sync();
+#   Close синхронизирует перед закрытием и возвращает обе ошибки через errors.Join.
+# Цена, которую надо принять сознательно: fsync на каждую запись — дорого. Групповая
+#   фиксация (один fsync на пачку) — следующий шаг, когда будет нагрузка; сейчас честность
+#   важнее скорости, потому что запись редкая (прецеденты, законы, чёрные лебеди).
+# Проверено: gocheck на клоне дома — чисто; `git apply --check` — ниже.
+# НЕ проверено: поведение под реальным диском и падением (нужен прогон).
+# Применение из корня дома:
+#   git apply --check pritok/patches/0004-stratos-wal-durability.patch && git apply pritok/patches/0004-stratos-wal-durability.patch
+#   go build ./... && go test -race ./modules/stratos/
+--- a/modules/stratos/store.go
++++ b/modules/stratos/store.go
+@@ -3,6 +3,7 @@ package stratos
+ import (
+ 	"crypto/sha256"
+ 	"encoding/binary"
++	"errors"
+ 	"math/bits"
+ 	"os"
+ 	"sync"
+@@ -45,6 +46,9 @@ type Store struct {
+ 
+ 	walFile   *os.File
+ 	lastChain [32]byte
++	// walErr — первая ошибка записи/синхронизации WAL. Раньше результат Write
++	// игнорировался: журнал мог не записаться, а память считала запись успешной.
++	walErr error
+ 
+ 	RecallQueries   atomic.Uint64
+ 	RecallHits      atomic.Uint64
+@@ -200,8 +204,12 @@ func (s *Store) Close() error {
+ 	s.mu.Lock()
+ 	defer s.mu.Unlock()
+ 	if s.walFile != nil {
++		syncErr := s.walFile.Sync()
+ 		err := s.walFile.Close()
+ 		s.walFile = nil
++		if syncErr != nil {
++			return errors.Join(syncErr, err)
++		}
+ 		return err
+ 	}
+ 	return nil
+@@ -231,5 +239,42 @@ func (s *Store) appendWALRecord(recType uint8, id uint64, ts int64, seal [32]byt
+ 	binary.LittleEndian.PutUint64(frame[8:16], id)
+ 	binary.LittleEndian.PutUint64(frame[16:24], uint64(ts))
+ 	copy(frame[24:56], seal[:])
+-	_, _ = s.walFile.Write(frame[:])
++	if _, err := s.walFile.Write(frame[:]); err != nil {
++		s.recordWALErr(err)
++		return
++	}
++	// Точка долговечности: без fsync запись живёт в кэше страниц и теряется
++	// при падении. Синхронизируем сразу — это дорого, но честно; групповая
++	// фиксация (один fsync на пачку) — следующий шаг, когда появится нагрузка.
++	if err := s.walFile.Sync(); err != nil {
++		s.recordWALErr(err)
++	}
++}
++
++func (s *Store) recordWALErr(err error) {
++	if s.walErr == nil {
++		s.walErr = err
++	}
++}
++
++// WALError — первая ошибка записи WAL (nil, если журнал писался без ошибок).
++// Память не должна молчать о том, что её запись не доехала до диска.
++func (s *Store) WALError() error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	return s.walErr
++}
++
++// Sync — принудительная синхронизация журнала с диском.
++func (s *Store) Sync() error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	if s.walFile == nil {
++		return nil
++	}
++	if err := s.walFile.Sync(); err != nil {
++		s.recordWALErr(err)
++		return err
++	}
++	return nil
+ }
