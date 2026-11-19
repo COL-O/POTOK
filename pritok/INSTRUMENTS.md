@@ -4,7 +4,7 @@
 (`go.dev`, `dl.google.com`, `proxy.golang.org`, Debian-зеркала и GitHub release-assets закрыты;
 открыты `github.com`, `api.github.com`, `codeload`, npm, pypi).
 
-## 1. `tools/gocheck/` — статический контроль Go без компилятора
+## 1. `pritok/tools/gocheck/` — статический контроль Go без компилятора (моя комната)
 
 Пять проверок на tree-sitter (WASM, ставится из npm локально в `node_modules`, не коммитится):
 
@@ -19,9 +19,9 @@
 Запуск:
 
 ```bash
-bash tools/gocheck/check.sh                    # свой мир (ветка сессии)
-bash tools/gocheck/check.sh /tmp/clone         # любой другой клон — путем, не «../..»
-GOCHECK_TARGET=/tmp/clone bash tools/gocheck/check.sh
+bash pritok/tools/gocheck/check.sh             # свой мир (ветка сессии)
+bash pritok/tools/gocheck/check.sh /tmp/clone  # любой другой клон — путем, не «../..»
+GOCHECK_TARGET=/tmp/clone bash pritok/tools/gocheck/check.sh
 bash pritok/tools/check-house.sh               # дом из origin/arena/3bbbb51d-potok
 ```
 

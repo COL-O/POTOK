@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-house.sh — сверка дома (ветка arena/3bbbb51d-potok) без переключения ветки.
 #
-# Дом выгружается во временный каталог, по нему прогоняется tools/gocheck.
+# Дом выгружается во временный каталог, по нему прогоняется pritok/tools/gocheck.
 # Ветка сессии не трогается: переключать её нельзя, а читать дом можно.
 set -euo pipefail
 
@@ -29,10 +29,10 @@ echo "[house] .go файлов: $(find "$tmp" -name '*.go' | wc -l)"
 echo
 
 # gocheck ищет wasm относительно GOCHECK_HOME (в нём живёт node_modules)
-export GOCHECK_HOME="$root/tools/gocheck"
+export GOCHECK_HOME="$root/pritok/tools/gocheck"
 
 status=0
 for s in parse check idents dup arity; do
-  node "$root/tools/gocheck/$s.mjs" "$tmp" || status=1
+  node "$root/pritok/tools/gocheck/$s.mjs" "$tmp" || status=1
 done
 exit $status

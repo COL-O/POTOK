@@ -5,7 +5,7 @@
 /POTOK
 
 # node_modules статического чекера (ставится локально)
-/tools/gocheck/node_modules/
+/pritok/tools/gocheck/node_modules/
 
 # зависимости статического чекера
 /node_modules/

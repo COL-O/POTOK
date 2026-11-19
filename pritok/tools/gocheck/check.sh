@@ -7,8 +7,8 @@
 # пакетов (неимпортированные и несуществующие имена, дубли объявлений,
 # несоответствие числа аргументов, лишние импорты) через tree-sitter-wasm.
 #
-# Запуск:  bash tools/gocheck/check.sh
-# Требует: node + npm (зависимости ставятся в tools/gocheck/node_modules,
+# Запуск:  bash pritok/tools/gocheck/check.sh
+# Требует: node + npm (зависимости ставятся в pritok/tools/gocheck/node_modules,
 #          который в .gitignore). На машине с Go пользуйтесь `go vet ./...`.
 set -euo pipefail
 
@@ -16,7 +16,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 # путь к проверяемому коду: аргумент либо переменная окружения.
 # Раньше root был жёстко «../..», и прогон по чужому клону молча проверял
 # сам POTOK — то есть «проверено» врало (найдено 2026-11-18).
-root="${1:-${GOCHECK_TARGET:-$here/../..}}"
+root="${1:-${GOCHECK_TARGET:-$here/../../..}}"
 root="$(cd "$root" && pwd)"
 
 if ! command -v node >/dev/null 2>&1; then

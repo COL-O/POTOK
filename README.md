@@ -17,7 +17,7 @@ go test ./...   # unit + сквозной тест цепочки front→polygo
 есть статический чекер на tree-sitter без Go:
 
 ```bash
-bash tools/gocheck/check.sh   # синтаксис, импорты, имена, дубли, арность
+bash pritok/tools/gocheck/check.sh   # синтаксис, импорты, имена, дубли, арность
 ```
 
 Он не заменяет `go vet`/`go test`, но ловит ошибки, из-за которых пакет не собирается.
