@@ -1,0 +1,98 @@
+name: Go Check (линтер, гонки, уязвимости)
+
+# Предложение Притока для дома. Файл лежит в pritok/asks/, НЕ в .github/workflows/:
+# править пайплайн — не моё право (подмена проверки = подмена проверки).
+# Чтобы включить, смотрителю моста достаточно положить его как
+# .github/workflows/go-check.yml и сделать первый прогон.
+#
+# Чем отличается от уже работающего ci.yml дома (POTOK Immune Check):
+#   ci.yml  = go test -race ./...  + go build ./...   (поведение)
+#   go-check = golangci-lint + govulncheck + flat/    (форма кода, уязвимости, вложенный модуль)
+# Они не дублируются: ci.yml отвечает «организм работает?», этот — «код не гниёт
+# и не тянет известных дыр?». Оба нужны, и оба ставятся в required checks.
+#
+# Версии прибиты: `latest` в проверке — это проверка, которая однажды изменится
+# без нашего ведома. На 19.11.2026 актуальны:
+#   actions/checkout v7.0.1, actions/setup-go v7.1.0,
+#   golangci/golangci-lint-action v9.3.0 (сам линтер — v2.15.0),
+#   golang/govulncheck-action v1.1.0
+
+on:
+  push:
+    branches: [main, "arena/**"]
+  pull_request:
+    branches: [main, "arena/**"]
+  # перезапуск руками, когда прогон сорвался на инфраструктуре
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # нужно линтеру, чтобы рисовать аннотации к строкам и считать «только новое»
+  pull-requests: read
+  checks: write
+
+jobs:
+  # --- 1. Линтер: форма и типовые ошибки ---------------------------------
+  lint:
+    name: Линтер (golangci-lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      # v9 требует setup-go ДО этого шага (с v4 removes skip-go-installation)
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          # v2 линтера читает .golangci.yml со `version: "2"` — см. корень репозитория
+          version: v2.15.0
+          # Пока код не приведён к линтеру, показываем только новое в PR,
+          # чтобы не блокировать работу из-за старого долга. Когда долг закрыт —
+          # убрать эту строку и включить линтер в required checks.
+          only-new-issues: true
+
+  # --- 2. Уязвимости в коде и зависимостях --------------------------------
+  vuln:
+    name: Уязвимости (govulncheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # setup-go здесь не нужен: govulncheck-action ставит Go сам
+      # (вход go-version-file + cache). Дублировать — значит тратить минуты.
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+          go-package: ./...
+
+  # --- 3. Вложенный модуль flat/ ------------------------------------------
+  flat:
+    name: Вложенный модуль flat/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: flat/go.mod
+          cache: true
+          # кэш отдельный: у flat/ свой go.sum
+          cache-dependency-path: flat/go.sum
+      # flat/ собирается отдельно от корня (свой go.mod), и корневой
+      # `go test ./...` его не видит вовсе. Пока обе раскладки живы — проверяем обе.
+      - name: Тесты flat/
+        working-directory: flat
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -race ./...
+      - name: Сборка flat/
+        working-directory: flat
+        run: go build ./...
+
+# Чего здесь намеренно НЕТ:
+#   - кэш тестового вывода и «состояние сборки» между прогонами — ложная экономия;
+#   - отправка результата в OpenObserve: это запись в чужие данные, решает Русло;
+#     к тому же из PR-прогонов с форков секретов всё равно не будет.
