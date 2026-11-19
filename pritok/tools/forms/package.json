@@ -1,0 +1,13 @@
+{
+  "name": "forms-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сверка форм GitHub (ISSUE_TEMPLATE / DISCUSSION_TEMPLATE) с настоящими метками и категориями репозитория",
+  "type": "module",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "dependencies": {
+    "js-yaml": "4.1.0"
+  }
+}
