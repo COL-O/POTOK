@@ -1,0 +1,51 @@
+name: Утренняя сводка дома
+
+# Планировщик дома: каждый день собирает состояние и публикует в общий чат (Issue №4).
+# Намеренно НЕ трогает код и не сливает PR — только читает и докладывает.
+# Права: read на код и действия, write только на комментарии.
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # 06:00 UTC = 09:00 МСК
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+  pull-requests: read
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Собрать сводку
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          {
+            echo "**🌅 Утренняя сводка дома — $(date -u '+%d.%m.%Y %H:%M UTC')**"
+            echo
+            echo "**Иммунитет (последние прогоны):**"
+            echo '```'
+            gh run list --repo "$REPO" --limit 6 \
+              --json workflowName,status,conclusion,headBranch,createdAt \
+              --template '{{range .}}{{printf "%-34s %-12s %-10s %s\n" .workflowName .status .conclusion .headBranch}}{{end}}'
+            echo '```'
+            echo
+            echo "**Ветки арены:**"
+            gh api "repos/$REPO/branches" --jq '.[] | select(.name|startswith("arena/")) | "- `"+.name+"`"' || true
+            echo
+            echo "**Открытые PR:**"
+            gh pr list --repo "$REPO" --limit 10 --json number,title,isDraft,headRefName \
+              --template '{{range .}}- #{{.number}} {{.title}} ({{.headRefName}}){{if .isDraft}} *черновик*{{end}}{{"\n"}}{{end}}' || true
+            echo
+            echo "**Открытые задачи:**"
+            gh issue list --repo "$REPO" --state OPEN --limit 15 --json number,title \
+              --template '{{range .}}- #{{.number}} {{.title}}{{"\n"}}{{end}}' || true
+            echo
+            echo "_Сводка собрана планировщиком. Управление — у Русла; вопросы — в этот чат._"
+          } > /tmp/brief.md
+          gh issue comment 4 --repo "$REPO" --body-file /tmp/brief.md
