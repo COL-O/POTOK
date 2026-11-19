@@ -8,21 +8,22 @@ inbox/<имя>.md, GitHub Actions исполняет директивы от git
 
 Формат: каждый блок начинается строкой `#### ▶ <директива>`.
 
-  #### ▶ comment 4              — комментарий в Issue №4 (по умолчанию DEFAULT_ISSUE)
+  #### ▶ comment                 — реплика в чат (обсуждение CHAT_DISCUSSION, по умолчанию №12)
+  #### ▶ comment 8               — комментарий в задачу №8 (любой номер, кроме чата)
   #### ▶ issue Заголовок задачи — создать задачу
   #### ▶ discussion General Заголовок — новое обсуждение в категории General
   #### ▶ file ruslo/zhurnal/2026-11-19.md — записать файл (коммит в текущую ветку)
   #### ▶ none                    — ничего не делать (пометка для человека)
 
 Текст блока — всё до следующей директивы. Если директив нет вовсе,
-весь файл публикуется комментарием в DEFAULT_ISSUE (поведение прежнего моста).
+весь файл публикуется репликой в чат (обсуждение CHAT_DISCUSSION).
 
 Безопасность (КОН 10): действия ограничены ТЕКУЩИМ репозиторием; файлы
 в .git/, .github/workflows/, .github/actions/, а также *.pem, *.key, .env*,
 secrets/ не пишутся никогда — это защита от подмены пайплайнов и утечки ключей.
 
 Запуск:
-  GH_TOKEN=... GITHUB_REPOSITORY=COL-O/POTOK DEFAULT_ISSUE=4 \
+  GH_TOKEN=... GITHUB_REPOSITORY=COL-O/POTOK CHAT_DISCUSSION=12 \
     python3 scripts/sfera_inbox.py inbox [--dry-run]
 """
 import base64
@@ -36,6 +37,9 @@ import urllib.request
 
 API = "https://api.github.com"
 DEFAULT_ISSUE = int(os.environ.get("DEFAULT_ISSUE", "4"))
+# Чат переехал из задачи №4 в обсуждение (19.11.2026): разговор — в разговоре.
+# Если номер совпадает с DEFAULT_ISSUE, реплика уходит в обсуждение CHAT_DISCUSSION.
+CHAT_DISCUSSION = int(os.environ.get("CHAT_DISCUSSION", "12"))
 REPO = os.environ.get("GITHUB_REPOSITORY", "COL-O/POTOK")
 TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
 
@@ -93,8 +97,30 @@ def split_blocks(text: str):
     return blocks
 
 
+def chat_comment(number: int, body: str, dry: bool):
+    """Реплика в обсуждение чата (по номеру). Комментарии issue и discussion — разные API."""
+    if dry:
+        return f"discussion #{number}: {len(body)} симв."
+    owner, name = REPO.split("/", 1)
+    st, res = graphql(
+        "query($o:String!,$n:String!,$num:Int!){repository(owner:$o,name:$n){discussion(number:$num){id}}}",
+        {"o": owner, "n": name, "num": number},
+    )
+    did = ((((res.get("data") or {}).get("repository")) or {}).get("discussion") or {}).get("id")
+    if not did:
+        return f"discussion #{number}: не найдено ({st} {res.get('errors', res.get('error', ''))})"
+    st, res = graphql(
+        "mutation($id:ID!,$b:String!){addDiscussionComment(input:{discussionId:$id,body:$b}){comment{url}}}",
+        {"id": did, "b": body},
+    )
+    url = (((res.get("data") or {}).get("addDiscussionComment")) or {}).get("comment", {}).get("url", "")
+    return f"discussion #{number}: {st} {url or res.get('errors', res.get('error', ''))}"
+
+
 def do_comment(arg: str, body: str, dry: bool):
     num = int(arg) if arg.strip().isdigit() else DEFAULT_ISSUE
+    if num == DEFAULT_ISSUE and CHAT_DISCUSSION:
+        return chat_comment(CHAT_DISCUSSION, body, dry)
     if dry:
         return f"comment #{num}: {len(body)} симв."
     st, res = api("POST", f"/repos/{REPO}/issues/{num}/comments", {"body": body})
