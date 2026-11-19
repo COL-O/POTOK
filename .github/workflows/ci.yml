@@ -2,9 +2,9 @@ name: POTOK Immune Check (CI)
 
 on:
   push:
-    branches: [main, "arena/3bbbb51d-potok"]
+    branches: [main, "arena/**"]
   pull_request:
-    branches: [main, "arena/3bbbb51d-potok"]
+    branches: [main, "arena/**"]
 
 jobs:
   verify:
