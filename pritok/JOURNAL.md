@@ -430,3 +430,65 @@ results-receiver, артефакт `test-output` отдаёт 302 на `blob.cor
 моих правок, а от того, что уже было в доме (задача №6).
 
 — Приток
+
+---
+
+## 2026-11-19 — Go поставлен. Впервые настоящий `go test`, а не чекер
+
+Основатель спросил: «что тебе нужно, чтобы поставить Go на платформу, смотри как
+это включается по основной документации». Ответ оказался не «дайте доступ», а
+«доступ уже есть, просто не туда смотрели».
+
+**Почему обычный путь не работает (проверено curl'ом, не на слово):**
+`go.dev`, `dl.google.com`, `storage.googleapis.com`, `proxy.golang.org`,
+`sum.golang.org`, `release-assets.githubusercontent.com` — **000**. То есть
+и «скачай tar.gz по документации», и `apt-get install golang-go` (deb.debian.org
+тоже 000 + нет прав на `/var/lib/apt/lists`) закрыты.
+
+**Что работает:** вторая официальная глава документации — `go.dev/doc/install/source`,
+сборка из исходников. Исходники Go лежат на **GitHub**, а он открыт; `gcc` и `make`
+в образе есть. Цепочка по требованиям bootstrap из той же страницы:
+
+```
+gcc/make → Go 1.4 (последний на C) → 1.19.13 → 1.20.14 → 1.22.12
+```
+(1.20–1.21 требуют ≥1.17; 1.22 требует ≥1.20.6 — поэтому 1.20 обязателен,
+сразу с 1.19 сборка падает на `building_Go_requires_Go_1_20_6_or_later`.)
+
+Собралось: `go version go1.22.12 linux/amd64`, лежит в `/usr/local/go` (писать
+туда можно, root не нужен). Скрипт целиком — `pritok/tools/gotoolchain/install-go.sh`,
+**прогнан с нуля в пустом каталоге**: 8 минут, версия на выходе та же.
+
+**Ограничение честное:** тулчейн собран с `CGO_ENABLED=0`, поэтому
+`go test -race` здесь **не запускается** («-race requires cgo»). Гонки остаются
+за CI. Это ограничение прогона, а не кода.
+
+**Зависимость:** `proxy.golang.org` нет, поэтому `go build` падал на
+`golang.org/x/sys@v0.27.0`. Скачала модуль с GitHub и подставила
+`go mod edit -replace` — **локально, в коммит не пошло** (`go.mod` восстановлен).
+
+**Первый настоящий прогон по дому (`go test ./...`, go1.22.12):**
+`go build ./...` — 0 ошибок, `go vet ./...` — чисто, `gofmt` — чисто, тестов
+**7 падающих**:
+
+| Тест | Что говорит |
+|---|---|
+| `seed`: `TestGenerateDefaultWorld`, `TestGenerateDeterministic` | `factory "quarry_01": нет created_at` |
+| `organism`: `TestOrganismChainOnStuckFlight` | `Diagnosis precedents = 0, want 1` |
+| `organism`: `TestFullOrganismEndToEndLifecycle` | `growth Evolve ... Rejected:true RejectionReason:6002` |
+| `front`: `TestRouterRoutineVetoAndQuarantine` | `expected FlagInQuarantine` |
+| `front`: `TestRouterZeroAllocations` | `unexpected step failure` |
+| `growth`: `TestGrowthAdversarialReplayRejectsBadLaw` | `expected 6005, got Rejected:false` |
+
+**С моими шестью патчами — 4 падающих, 3 закрыто.** `TestRouterRoutineVetoAndQuarantine`
+уходит (патч 0006), seed почти уходит, но **патч 0003 был неполным**: он лечил
+только `Meta` завода, а `contracts.Meta` встроена ещё в `WorkCenter`, `Connection`,
+продукт и спецификацию — ошибка переезжала с завода на «work center». Сделала
+**патч 0007** (все `Meta` в `seed`), проверила прогоном: `modules/seed` → `ok`.
+Итог: 7 → 4.
+
+**Что осталось и почему не чиню молча:** четыре теста — это смысл, а не опечатки
+(`RejectionReason:6002` при `err=<nil>`, «нулевые аллокации» требуют графа,
+перекрытие scratch в growth). Решать кругу; я записала точный факт.
+
+— Приток
