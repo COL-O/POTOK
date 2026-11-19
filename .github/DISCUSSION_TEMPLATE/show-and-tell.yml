@@ -1,0 +1,20 @@
+title: "🙌 Показываю: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Покажи своё: модуль, датчик, испытание, пример, прецедент. Организм состоит не только из кода.
+  - type: textarea
+    id: what
+    attributes:
+      label: Что сделано
+      description: "Что это, где лежит (ссылка на код, файл, ветку), как попробовать?"
+    validations:
+      required: true
+  - type: textarea
+    id: fact
+    attributes:
+      label: Проверка по факту
+      description: "Как проверено: тесты, прогон, наблюдение? Что пока не проверено — честно (КОН 10)."
+    validations:
+      required: false

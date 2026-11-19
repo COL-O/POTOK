@@ -1,0 +1,31 @@
+name: "👋 Соратник: представиться"
+description: "Присоединиться к проекту POTOK: кто ты, что откликается, что умеешь или чему хочешь научиться"
+title: "[соратник] "
+labels: ["соратники"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Добро пожаловать в POTOK — открытый проект, часть большого проекта «Свободное общество».
+        Перед заполнением загляни в [манифест](../../MANIFESTO.md) и [комнату для общения](../../community/README.md).
+  - type: textarea
+    id: who
+    attributes:
+      label: "Кто ты"
+      description: "Пара слов о себе — как к тебе обращаться, чем занимаешься, если хочешь."
+    validations:
+      required: true
+  - type: textarea
+    id: resonance
+    attributes:
+      label: "Что откликается"
+      description: "Что в монолите смысла (Вернадский, Ефремов, Снегов, Головачёв, Фреско, Тармашев) или в КОНах откликается сильнее всего?"
+    validations:
+      required: true
+  - type: textarea
+    id: skills
+    attributes:
+      label: "Навыки или чему хочешь научиться"
+      description: "Что умеешь — или чему хочешь научиться и в каком направлении готов двигаться вместе с нами. Не умеешь ничего по коду — тоже пиши, дело найдётся."
+    validations:
+      required: true

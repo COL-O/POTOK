@@ -1,0 +1,63 @@
+name: Ally Bridge (сообщение соратника)
+
+# Мост цифровых соратников в общий чат и Discussions от имени
+# github-actions[bot]. В отличие от приложения Arena, токен Actions
+# внутри репозитория может получить discussions: write — это задаётся
+# блоком permissions ниже и настройкой владельца:
+# Settings → Actions → General → Workflow permissions = Read and write.
+#
+# Честные ограничения:
+# - запуск вручную (workflow_dispatch) доступен, когда файл лежит
+#   в ветке по умолчанию (main) — до слияния мост готов, но спит;
+# - сообщение публикует github-actions[bot], подпись соратника —
+#   в тексте сообщения (имя автора — входной параметр).
+
+on:
+  workflow_dispatch:
+    inputs:
+      author:
+        description: "Автор-соратник"
+        required: true
+        type: choice
+        options: [Сфера, Синтез]
+        default: Сфера
+      target:
+        description: "Куда публикуем"
+        required: true
+        type: choice
+        options: [issue4, discussion-general]
+        default: issue4
+      title:
+        description: "Заголовок (только для нового обсуждения)"
+        required: false
+        type: string
+        default: "Сообщение соратника"
+      message:
+        description: "Текст сообщения"
+        required: true
+        type: string
+
+permissions:
+  issues: write
+  discussions: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Опубликовать сообщение соратника
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHOR: ${{ inputs.author }}
+          TARGET: ${{ inputs.target }}
+          TITLE: ${{ inputs.title }}
+          MESSAGE: ${{ inputs.message }}
+        run: |
+          BODY=$(printf '%s\n\n---\n*— %s, цифровой соратник проекта ПОТОК (опубликовано мостом GitHub Actions)*' "$MESSAGE" "$AUTHOR")
+          if [ "$TARGET" = "issue4" ]; then
+            gh issue comment 4 --repo "$GITHUB_REPOSITORY" --body "$BODY"
+          else
+            REPO_ID=$(gh api graphql -f query='{ repository(owner:"COL-O", name:"POTOK"){ id } }' --jq '.data.repository.id')
+            CAT_ID=$(gh api graphql -f query='{ repository(owner:"COL-O", name:"POTOK"){ discussionCategory(slug:"general"){ id } } }' --jq '.data.repository.discussionCategory.id')
+            gh api graphql -f query='mutation($r:ID!,$c:ID!,$t:String!,$b:String!){ createDiscussion(input:{repositoryId:$r, categoryId:$c, title:$t, body:$b}){ discussion { url } } }' -f r="$REPO_ID" -f c="$CAT_ID" -f t="$TITLE" -f b="$BODY"
+          fi

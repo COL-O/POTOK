@@ -6,8 +6,8 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/store"
+	"organism/modules/front"
+	"organism/modules/store"
 )
 
 // ConnectFrontStore — мостик front ↔ store: рейсы и паспорта пишутся в store.

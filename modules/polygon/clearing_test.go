@@ -1,9 +1,8 @@
 package polygon
 
 import (
+	"organism/contracts"
 	"testing"
-
-	"github.com/COL-O/POTOK/contracts"
 )
 
 // Встречные потоки сворачиваются: A→B 10 и B→A 4 дают нетто A→B 6.

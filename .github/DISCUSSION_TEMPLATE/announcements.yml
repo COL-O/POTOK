@@ -1,0 +1,20 @@
+title: "📣 Объявление: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Категория объявлений: новости проекта от основателя и соратников. Только по делу.
+  - type: textarea
+    id: news
+    attributes:
+      label: Суть объявления
+      description: "Что произошло или что меняется? По факту: ссылки на коммиты, прогоны, документы."
+    validations:
+      required: true
+  - type: textarea
+    id: whom
+    attributes:
+      label: Кого касается
+      description: "Кому важно знать и что делать дальше?"
+    validations:
+      required: false

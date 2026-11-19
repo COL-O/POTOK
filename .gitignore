@@ -1,8 +1,29 @@
-# Локальные данные и бинарники организма не коммитятся
+/organism
+
+# Данные организма и журналы (не коммитятся)
 /data/
-*.exe
-/potok
-/POTOK
+*.wal
+*.log
+
+# Покрытие и профили
+coverage.out
+*.prof
+
+# Кэши и служебное
+.cache/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Секреты соратников-ботов: ключи и токены не коммитятся никогда
+*.pem
+ALLY_GITHUB_TOKEN
+community/ISSUE4_LIVE.md
 
 # node_modules статического чекера (ставится локально)
 /pritok/tools/gocheck/node_modules/

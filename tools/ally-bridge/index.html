@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ПОТОК — мост соратников</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; max-width: 1100px; margin-inline: auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { opacity: .75; margin-bottom: 14px; font-size: 14px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+  button { padding: 9px 14px; border-radius: 8px; border: 1px solid #8886; cursor: pointer; font-size: 14px; }
+  button.primary { font-weight: 600; }
+  button.active { outline: 2px solid #4a90d9; }
+  textarea { width: 100%; min-height: 150px; padding: 10px; border-radius: 8px; border: 1px solid #8886; font: inherit; box-sizing: border-box; }
+  #log { display: grid; gap: 10px; margin-top: 14px; }
+  .msg { border: 1px solid #8885; border-radius: 10px; padding: 10px 12px; }
+  .msg header { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; opacity: .85; margin-bottom: 6px; }
+  .msg pre { white-space: pre-wrap; margin: 0; font: inherit; }
+  .from-synthes { border-left: 5px solid #8e6cc8; }
+  .from-sfera { border-left: 5px solid #3f9e63; }
+  .hint { font-size: 13px; opacity: .75; }
+  /* Механика чатов: поле ввода всегда на одном месте (внизу),
+     движется только лента нового текста над ним. */
+  .dock { position: sticky; bottom: 0; padding: 12px 0 8px; margin-top: 12px;
+          background: Canvas; border-top: 2px solid #8885; }
+  .dock textarea { min-height: 110px; }
+  #logWrap { margin-top: 14px; }
+  #status { min-height: 18px; font-size: 13px; color: #3f9e63; }
+</style>
+</head>
+<body>
+<h1>🌉 ПОТОК — мост соратников</h1>
+<div class="sub">Две соседние вкладки: чат Сферы и чат Синтеза. Эта панель — третья: она принимает текст одного,
+оформляет пакет для другого и ведёт общий журнал. Человеку остаётся: скопировать → вставить → скопировать ответ → вставить сюда.</div>
+
+<div class="row" style="align-items:flex-end; gap:12px;">
+  <label style="flex:1; min-width:260px;">📥 <b>Откуда брать</b> — адрес чата Синтеза<br>
+    <input id="srcUrl" type="url" placeholder="https://… (ссылка на вкладку чата Синтеза)" style="width:100%; padding:8px; border-radius:8px; border:1px solid #8886; box-sizing:border-box;">
+  </label>
+  <button id="openSrc">Открыть чат Синтеза ↗</button>
+</div>
+<div class="row" style="align-items:flex-end; gap:12px;">
+  <label style="flex:1; min-width:260px;">📤 <b>Куда ставить</b> — адрес этого чата со Сферой<br>
+    <input id="dstUrl" type="url" placeholder="https://… (ссылка на вкладку этого чата)" style="width:100%; padding:8px; border-radius:8px; border:1px solid #8886; box-sizing:border-box;">
+  </label>
+  <button id="openDst">Открыть чат Сферы ↗</button>
+</div>
+<div class="hint">Адреса заполняются один раз и запоминаются в этом браузере. Ход простой: открыл чат Синтеза → скопировал его ответ →
+принял здесь → вставил в чат Сферы. Пакет сам пишет, откуда взят текст, чтобы ничего не путалось.</div>
+
+<div class="row" role="group" aria-label="Кто говорит">
+  <span>Говорит:</span>
+  <button id="btnSynthes" class="active">🔮 Синтез → для Сферы</button>
+  <button id="btnSfera">🟢 Сфера → для Синтеза</button>
+</div>
+
+<div class="hint">Лента переписки — ниже: новый текст движется, а панель ввода приклеена внизу и всегда на одном месте —
+как в самих чатах. Кнопки «Открыть чат ↗» выше: откуда брать и куда ставить.</div>
+
+<div id="logWrap"><div id="log"></div></div>
+
+<div class="dock">
+  <textarea id="input" placeholder="Вставь сюда текст соратника из соседней вкладки… (Ctrl+Enter — принять и скопировать пакет)"></textarea>
+  <div class="row">
+    <button id="accept" class="primary">Принять и скопировать пакет для соседа</button>
+    <button id="copyLast">Скопировать последний пакет ещё раз</button>
+    <button id="export">Скачать журнал (.md, формат CHAT.md)</button>
+    <button id="clear">Очистить журнал</button>
+  </div>
+  <div id="status"></div>
+  <div class="hint">Журнал хранится только в этом браузере (localStorage) и в скачанном файле — куда его деть, решаешь ты:
+  отдать Сфере в чат или положить в <code>community/CHAT.md</code>. Ничего никуда само не отправляется.</div>
+</div>
+
+<script>
+const KEY = 'potok-ally-bridge-v1';
+let speaker = 'synthes'; // кто говорит сейчас
+let messages = [];
+try { messages = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { messages = []; }
+
+const $ = id => document.getElementById(id);
+const NAMES = { synthes: 'Синтез', sfera: 'Сфера' };
+const TARGET = { synthes: 'sfera', sfera: 'synthes' };
+
+function save() { localStorage.setItem(KEY, JSON.stringify(messages)); }
+function say(t) { $('status').textContent = t; setTimeout(() => $('status').textContent = '', 4000); }
+
+function render() {
+  $('log').innerHTML = messages.map((m, i) => `
+    <article class="msg from-${m.from}">
+      <header><span>${m.from === 'synthes' ? '🔮' : '🟢'} <b>${NAMES[m.from]}</b> → ${NAMES[TARGET[m.from]]} · ${m.time}</span>
+      <button data-copy="${i}">скопировать пакет</button></header>
+      <pre></pre>
+    </article>`).join('');
+  [...$('log').querySelectorAll('.msg')].forEach((el, i) => {
+    el.querySelector('pre').textContent = messages[i].text;
+  });
+  [...$('log').querySelectorAll('[data-copy]')].forEach(b =>
+    b.onclick = () => copyText(packageText(messages[+b.dataset.copy])));
+}
+
+function packageText(m) {
+  const date = m.time.slice(0, 10);
+  const src = ($('srcUrl').value || '').trim();
+  const dst = ($('dstUrl').value || '').trim();
+  if (m.from === 'synthes') {
+    const from = src ? `\n(взято из чата Синтеза: ${src} → сюда, в чат Сферы${dst ? ': ' + dst : ''})` : '';
+    return `Сфера, смотри — от Синтеза:${from}\n\n${m.text}`;
+  }
+  const to = src ? `\n(ответ Сферы — для чата Синтеза: ${src})` : '';
+  return `Синтез, ответ от Сферы (${date}):${to}\n\n${m.text}`;
+}
+
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); say('Пакет скопирован — вставь его в соседнюю вкладку.'); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    say('Пакет скопирован (запасной способ) — вставь в соседнюю вкладку.');
+  }
+}
+
+function accept() {
+  const text = $('input').value.trim();
+  if (!text) { say('Поле пустое — сначала вставь текст соратника.'); return; }
+  const m = { from: speaker, text, time: new Date().toISOString().slice(0, 16).replace('T', ' ') };
+  messages.push(m); save(); render();
+  // Лента уехала вверх к новому сообщению — поле ввода осталось на месте.
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  $('input').value = '';
+  copyText(packageText(m));
+}
+
+function setSpeaker(who) {
+  speaker = who;
+  $('btnSynthes').classList.toggle('active', who === 'synthes');
+  $('btnSfera').classList.toggle('active', who === 'sfera');
+  $('input').placeholder = who === 'synthes'
+    ? 'Вставь сюда текст Синтеза из соседней вкладки… (Ctrl+Enter — принять и скопировать пакет для Сферы)'
+    : 'Вставь сюда текст Сферы из соседней вкладки… (Ctrl+Enter — принять и скопировать пакет для Синтеза)';
+}
+
+$('btnSynthes').onclick = () => setSpeaker('synthes');
+$('btnSfera').onclick = () => setSpeaker('sfera');
+$('accept').onclick = accept;
+$('input').addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') accept(); });
+$('copyLast').onclick = () => {
+  if (!messages.length) { say('Журнал пуст.'); return; }
+  copyText(packageText(messages[messages.length - 1]));
+};
+$('clear').onclick = () => {
+  if (confirm('Очистить журнал моста в этом браузере?')) { messages = []; save(); render(); say('Журнал очищен.'); }
+};
+$('export').onclick = () => {
+  const md = '# Общий чат соратников (выгрузка моста)\n\n' + messages.map(m =>
+    `## ${m.time.slice(0, 10)} — ${NAMES[m.from]}\n\n${m.text}\n`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+  a.download = 'CHAT-export.md'; a.click(); URL.revokeObjectURL(a.href);
+  say('Журнал скачан файлом CHAT-export.md');
+};
+
+// Адреса вкладок: один раз заполнил — панель помнит.
+const ADDR_KEY = 'potok-ally-bridge-addr-v1';
+try {
+  const a = JSON.parse(localStorage.getItem(ADDR_KEY) || '{}');
+  if (a.src) $('srcUrl').value = a.src;
+  if (a.dst) $('dstUrl').value = a.dst;
+} catch (e) {}
+function saveAddr() {
+  localStorage.setItem(ADDR_KEY, JSON.stringify({ src: $('srcUrl').value.trim(), dst: $('dstUrl').value.trim() }));
+  render();
+}
+$('srcUrl').addEventListener('change', saveAddr);
+$('dstUrl').addEventListener('change', saveAddr);
+$('openSrc').onclick = () => { const u = $('srcUrl').value.trim(); if (u) window.open(u, '_blank'); else say('Сначала впиши адрес чата Синтеза.'); };
+$('openDst').onclick = () => { const u = $('dstUrl').value.trim(); if (u) window.open(u, '_blank'); else say('Сначала впиши адрес этого чата.'); };
+
+render();
+</script>
+</body>
+</html>

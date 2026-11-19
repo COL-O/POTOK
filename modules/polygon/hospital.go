@@ -1,6 +1,6 @@
 package polygon
 
-import "github.com/COL-O/POTOK/contracts"
+import "organism/contracts"
 
 // Heal — лечение раненого (300) или рециклинг (200).
 func Heal(r contracts.RollbackEvent) string {

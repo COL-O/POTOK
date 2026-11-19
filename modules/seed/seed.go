@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/COL-O/POTOK/contracts"
-	"github.com/COL-O/POTOK/core"
+	"organism/contracts"
+	"organism/core"
 )
 
 // Config — параметры генерации мира.

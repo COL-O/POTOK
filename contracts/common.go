@@ -1,29 +1,41 @@
-// Package contracts — общие типы организма POTOK.
-//
-// Структура пакета по авторскому фундаменту:
-// common.go (Meta, ошибки), flight.go, passport.go, rollback.go,
-// catalog.go (роли, изделия, BOM), suggestion.go (подсказки, мощности),
-// interning.go (словарь код → ID), factory.go (расширенный завод).
 package contracts
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
-// Meta — общие метаданные любой сущности/сообщения организма.
+// Meta — общая «шапка» любого контракта.
+// Знает: от кого, для кого, когда, в какой ветке.
 type Meta struct {
-	Source    string   `json:"source"`
-	Targets   []string `json:"targets,omitempty"`
-	CreatedAt int64    `json:"created_at,omitempty"` // unix-секунды, 0 — не задано
-	Branch    string   `json:"branch,omitempty"`
+	Source    string    `json:"source"`
+	Targets   []string  `json:"targets,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	Branch    string    `json:"branch"`
 }
 
-// Общие ошибки контрактов.
+// Validate — проверка метаданных.
+func (m Meta) Validate() error {
+	if m.Source == "" {
+		return ErrNoSource
+	}
+	if m.CreatedAt.IsZero() {
+		return ErrNoCreatedAt
+	}
+	if m.Branch == "" {
+		m.Branch = "main"
+	}
+	return nil
+}
+
 var (
-	// ErrUnknownProduct — BOM-связь ссылается на неизвестное изделие.
-	ErrUnknownProduct = errors.New("contracts: unknown product in BOM edge")
-	// ErrNonAdjacentLayer — BOM-связь не между соседними слоями.
-	ErrNonAdjacentLayer = errors.New("contracts: BOM layers are not adjacent")
-	// ErrBOMCycle — в BOM обнаружен цикл.
-	ErrBOMCycle = errors.New("contracts: BOM contains a cycle")
-	// ErrEmptyCode — пустой код завода или SKU изделия.
-	ErrEmptyCode = errors.New("contracts: empty code")
+	ErrNoSource    = errors.New("contracts: нет source")
+	ErrNoCreatedAt = errors.New("contracts: нет created_at")
+	ErrNoFlightID  = errors.New("contracts: нет flight_id")
+	ErrNoTraceID   = errors.New("contracts: нет trace_id")
+	ErrNoFactory   = errors.New("contracts: нет factory_id")
+	ErrNoProduct   = errors.New("contracts: нет product_id")
+	ErrBadStatus   = errors.New("contracts: неизвестный status")
+	ErrNoPassport  = errors.New("contracts: нет passport_id")
+	ErrNoRollback  = errors.New("contracts: нет rollback_id")
 )

@@ -5,8 +5,8 @@ package stratos
 import (
 	"context"
 
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/store"
+	"organism/core"
+	"organism/modules/store"
 )
 
 // Module — модуль слоя stratos.

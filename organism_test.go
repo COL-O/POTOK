@@ -4,16 +4,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/COL-O/POTOK/contracts"
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/modules/bim"
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/graph"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/growth/projector"
-	"github.com/COL-O/POTOK/modules/polygon"
-	"github.com/COL-O/POTOK/modules/store/memory"
-	"github.com/COL-O/POTOK/modules/stratos"
+	"organism/contracts"
+	"organism/core"
+	"organism/modules/bim"
+	"organism/modules/front"
+	"organism/modules/graph"
+	"organism/modules/growth"
+	"organism/modules/growth/projector"
+	"organism/modules/polygon"
+	"organism/modules/store/memory"
+	"organism/modules/stratos"
 )
 
 // Сквозная цепочка организма: застрявший рейс front рождает FlightStuck,

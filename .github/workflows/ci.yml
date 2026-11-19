@@ -1,0 +1,51 @@
+name: POTOK Immune Check (CI)
+
+on:
+  push:
+    branches: [main, "arena/**"]
+  pull_request:
+    branches: [main, "arena/**"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      # ВАЖНО (Русло, 18.11.2026): без pipefail код возврата шага берётся от `tee`
+      # (всегда 0), и падающие тесты давали зелёный job. `shell: bash` включает
+      # `bash -eo pipefail`; `set -o pipefail` продублирован явно — чтобы защита
+      # не зависела от того, какой shell GitHub выберет по умолчанию.
+      - name: Run Tests with Race Detector
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -v -race ./... 2>&1 | tee test-output.txt
+
+      - name: Upload test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output.txt
+          retention-days: 7
+
+      - name: Verify Build
+        shell: bash
+        run: |
+          set -o pipefail
+          go build -v ./... 2>&1 | tee build-output.txt
+
+      - name: Upload build output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: build-output.txt
+          retention-days: 7
