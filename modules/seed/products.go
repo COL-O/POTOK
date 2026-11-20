@@ -21,7 +21,7 @@ func (g *Generator) generateProducts() error {
 				return err
 			}
 			p := contracts.Product{
-				Meta:     contracts.Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
+				Meta:     contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
 				ID:       id,
 				SKU:      sku,
 				Layer:    contracts.LayerRaw,
@@ -58,7 +58,7 @@ func (g *Generator) generateLayerProducts(prefix string, n int, layer contracts.
 			continue
 		}
 		out = append(out, contracts.Product{
-			Meta:     contracts.Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
+			Meta:     contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
 			ID:       id,
 			SKU:      sku,
 			Layer:    layer,

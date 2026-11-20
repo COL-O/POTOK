@@ -84,6 +84,10 @@ type Router struct {
 	EscalatedGrowth atomic.Uint64
 	VetoBlocked     atomic.Uint64
 	DemotedReflexes atomic.Uint64
+	// OrgansOutOfBounds — сколько раз орган из маски не смог быть выполнен,
+	// потому что вышел за свою применимость (КОН 10: граница фиксируется,
+	// а не скрывается). Такт не обрушается: остальные органы маски отрабатывают.
+	OrgansOutOfBounds atomic.Uint64
 }
 
 func NewRouter(
@@ -188,8 +192,12 @@ func (r *Router) Step(eventID uint64) (bus.Verdict, error) {
 			continue
 		}
 		if !org.InBounds(view) {
-			r.triggerSurpriseWithResonanceCheck(now, baseView.Header, hdcVerdict.ActionCode)
-			return bus.Verdict{OrganID: organID, Status: bus.StatusOutOfBounds}, nil
+			// КОН 10: граница органа — факт, фиксируем в телеметрии,
+			// но не обрушаем такт: остальные органы маски отрабатывают.
+			// Вырожденный случай «никто не отработал» разруливает Confidence Gate ниже.
+			r.OrgansOutOfBounds.Add(1)
+			r.Heatmap[organID].Add(1)
+			continue
 		}
 		v, m := org.Process(view)
 		r.Heatmap[organID].Add(1)
@@ -308,7 +316,11 @@ func (r *Router) evaluateQuarantineShadow(view bus.TickView, activeVerdict bus.V
 			diff += bits.OnesCount64(view.HDC.Words[w] ^ cand.Pattern.Words[w])
 		}
 		sim := 1.0 - (float32(diff) / totalBits)
-		if sim >= cand.MinSim && sim > activeVerdict.Confidence {
+		// Кварантин — это «похоже на опасный класс, даже если активный ответ уверен».
+		// Строгое `>` отказывало в кварантине при РАВНОЙ уверенности: нулевой кадр
+		// совпадает с нулевым шаблоном на 1.0, активный вердикт тоже 1.0 — флаг не
+		// ставился (падение TestRouterRoutineVetoAndQuarantine, router_test.go:101).
+		if sim >= cand.MinSim && sim >= activeVerdict.Confidence {
 			r.setFlag(view.Header, bus.FlagInQuarantine)
 			break
 		}

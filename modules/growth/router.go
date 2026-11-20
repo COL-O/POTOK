@@ -165,7 +165,7 @@ func (r *Router) Evolve(eventID uint64, targetCauseCode uint32, vetoToRehabilita
 	var compiled CompiledLUT
 	if len(scratch) >= 64+(res+2)*4 {
 		lutView := view
-		lutView.Scratch = scratch[64:]
+		lutView.Scratch = scratch
 		lutVerdict, _ := r.lutkan.Process(lutView)
 		r.Heatmap[OrganIDLUTKAN].Add(1)
 		if lutVerdict.Status != bus.StatusOK {
@@ -213,10 +213,22 @@ func (r *Router) Evolve(eventID uint64, targetCauseCode uint32, vetoToRehabilita
 	}
 
 	if r.updater != nil {
-		snap := r.updater.SnapshotCurrentGenome()
-		r.lastHealthySnap.Store(&snap)
 		alpha := r.cfg.InitialAlpha
 		audit.AlphaBlend = alpha
+		// Сначала — доказанное лечение вето (7.4): оно становится частью
+		// «предыдущего здорового поколения» (docs/05-growth.md §7.5).
+		// Закон (7.5): снимок v.N-1 — ДО развёртывания нового закона,
+		// единая связка {HDC-таблица + KAN + VetoMask}, но без уже снятых
+		// реабилитацией запретов — иначе откат воскресил бы то, что
+		// growth уже признал безопасным.
+		if vetoToRehabilitate != 0 {
+			r.updater.RehabilitateVeto(vetoToRehabilitate)
+			audit.Rehabilitated = vetoToRehabilitate
+			r.RehabilitatedCount.Add(1)
+		}
+		snap := r.updater.SnapshotCurrentGenome()
+		r.lastHealthySnap.Store(&snap)
+		// Теперь — развёртывание v.N: KAN и рефлекс принадлежат новому поколению.
 		newKAN := &polygon.KANRuleTable{
 			Version:     genID,
 			GenealogyID: genID,
@@ -231,11 +243,6 @@ func (r *Router) Evolve(eventID uint64, targetCauseCode uint32, vetoToRehabilita
 				front.HDCPrototype{Pattern: *view.HDC, ClassID: targetCauseCode, BaseMask: bestBranchMask, MinSim: 0.85, GenealogyID: genID},
 				front.TsetlinClause{IncludeFlags: bus.FlagReady, AddMask: bestBranchMask, ActionCode: targetCauseCode, Weight: compiled.SafetyScore},
 			)
-		}
-		if vetoToRehabilitate != 0 {
-			r.updater.RehabilitateVeto(vetoToRehabilitate)
-			audit.Rehabilitated = vetoToRehabilitate
-			r.RehabilitatedCount.Add(1)
 		}
 	}
 

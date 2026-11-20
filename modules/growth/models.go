@@ -272,8 +272,11 @@ func (o *LUTKANOrgan) Process(view bus.TickView) (bus.Verdict, bus.OrganMetrics)
 		res = 8
 	}
 	neededBytes := (res + 2) * 4
-	if len(view.Scratch) >= neededBytes {
-		out := unsafe.Slice((*float32)(unsafe.Pointer(&view.Scratch[0])), res+2)
+	// КОН-изоляция scratch по docs/05-growth.md §«Изоляция»: SINDyEquation живёт
+	// в [0..64), таблица CompiledLUT — в [64..). Не «затирают» друг друга:
+	// уравнение читается из [0..), таблица пишется в [64..).
+	if len(view.Scratch) >= 64+neededBytes {
+		out := unsafe.Slice((*float32)(unsafe.Pointer(&view.Scratch[64])), res+2)
 		out[0] = guardMin
 		out[1] = guardMax
 		for i := 0; i < res; i++ {

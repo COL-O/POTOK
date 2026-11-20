@@ -20,6 +20,9 @@ type Module struct {
 // New — новый модуль stratos со своей цепочкой.
 func New() *Module { return &Module{chain: NewChain()} }
 
+// SetBus — мостик links: модуль работает на общей шине организма.
+func (m *Module) SetBus(b core.EventBus) { m.bus = b }
+
 // Name — имя модуля в реестре.
 func (m *Module) Name() string { return "stratos" }
 

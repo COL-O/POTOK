@@ -258,7 +258,11 @@ func TestFullOrganismEndToEndLifecycle(t *testing.T) {
 	for i := range alienHDC.Words {
 		alienHDC.Words[i] = 0x5555555555555555
 	}
-	series := []float32{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 18.0, 21.0, 23.0, 25.0}
+	// Аномальная серия: HDC её «не узнаёт» (alien), но динамика законна —
+	// dx=const=1.5 (арифметическая прогрессия). SINDy обязан найти закон.
+	// (Прежняя серия со скачком 1..25 не была функцией dx=f(x) вообще:
+	// x=1 встречалась и с dx=0, и с dx=17 — ни одна регрессия не сходилась.)
+	series := []float32{1.0, 2.5, 4.0, 5.5, 7.0, 8.5, 10.0, 11.5, 13.0, 14.5, 16.0, 17.5}
 	tOff, _ := coreBus.Tensors.Write4D(0, [4]uint16{1, 1, 1, 12}, series)
 	gOff, _ := coreBus.Graphs.Write(0, []uint32{0, 1, 1}, []uint32{1}, []float32{1.5})
 

@@ -18,7 +18,7 @@ func (g *Generator) generateBIM() error {
 		n := 2 + g.rng.Intn(4)
 		for i := 0; i < n; i++ {
 			wc := contracts.WorkCenter{
-				Meta:      contracts.Meta{Source: "seed", Targets: []string{"projector", "front"}, Branch: "main"},
+				Meta:      contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"projector", "front"}, Branch: "main"},
 				ID:        wcID,
 				FactoryID: f.ID,
 				Type:      "line",
@@ -41,7 +41,7 @@ func (g *Generator) generateBIM() error {
 		}
 		for i := 0; i < len(wcs)-1; i++ {
 			c := contracts.Connection{
-				Meta:       contracts.Meta{Source: "seed", Targets: []string{"front", "bim"}, Branch: "main"},
+				Meta:       contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "bim"}, Branch: "main"},
 				FromID:     wcs[i],
 				ToID:       wcs[i+1],
 				DistanceM:  int32(10 + g.rng.Intn(90)),

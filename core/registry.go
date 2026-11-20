@@ -21,12 +21,24 @@ type registry struct {
 	modules   map[string]Module
 	manifests map[string]Manifest
 	order     []string
+	// bus — общее поле организма: одна шина на всех. Раньше шина создавалась
+	// внутри StartAll на каждый модуль, и модули не слышали друг друга.
+	bus EventBus
 }
 
 func NewRegistry() Registry {
 	return &registry{
 		modules:   make(map[string]Module),
 		manifests: make(map[string]Manifest),
+		bus:       NewEventBus(),
+	}
+}
+
+// SetBus задаёт общую шину организма. Без него StartAll создаёт каждому
+// модулю свою шину, и модули не слышат друг друга.
+func (r *registry) SetBus(b EventBus) {
+	if b != nil {
+		r.bus = b
 	}
 }
 
@@ -60,7 +72,7 @@ func (r *registry) StartAll(ctx context.Context) error {
 		if !manifest.Enabled {
 			continue
 		}
-		env := &Env{Registry: r, Bus: NewEventBus()}
+		env := &Env{Registry: r, Bus: r.bus}
 		if err := m.Init(ctx, env); err != nil {
 			return fmt.Errorf("Init %q: %w", name, err)
 		}

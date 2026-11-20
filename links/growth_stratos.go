@@ -10,7 +10,6 @@ import (
 // stratos подписан на шине и кладёт предложение в цепочку прецедентов.
 // Связь — через EventBus (тема Suggestion).
 func ConnectGrowthStratos(g *growth.Module, s *stratos.Module, bus core.EventBus) {
-	_ = g
-	_ = s
-	_ = bus
+	g.SetBus(bus)
+	s.SetBus(bus)
 }
