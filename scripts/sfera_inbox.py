@@ -13,6 +13,7 @@ inbox/<имя>.md, GitHub Actions исполняет директивы от git
   #### ▶ issue Заголовок задачи — создать задачу
   #### ▶ discussion General Заголовок — новое обсуждение в категории General
   #### ▶ file ruslo/zhurnal/2026-11-19.md — записать файл (коммит в текущую ветку)
+  #### ▶ board 23 В работе       — заявка на статус карточки (исполняет дом: scripts/board_apply.py)
   #### ▶ none                    — ничего не делать (пометка для человека)
 
 Текст блока — всё до следующей директивы. Если директив нет вовсе,
@@ -31,6 +32,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -163,6 +165,20 @@ def do_discussion(arg: str, body: str, dry: bool):
     return f"discussion «{title}»: {st} {url or res.get('errors', res.get('error', ''))}"
 
 
+def do_board(arg: str, body: str, dry: bool):
+    """Заявка на статус карточки доски. Запись в Projects v2 боту запрещена
+    (`Resource not accessible by integration`), поэтому мост кладёт заявку файлом,
+    а применяет её дом (scripts/board_apply.py) — у него есть право записи."""
+    parts = arg.split(None, 1)
+    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].strip():
+        return "board: формат `board <номер задачи> <статус>`"
+    num, status = parts[0], parts[1].strip()
+    path = f"board/requests/{num}-{int(time.time())}.md"
+    body_json = json.dumps({"issue": int(num), "status": status}, ensure_ascii=False)
+    out = do_file(path, body_json, dry)
+    return out.replace("file «", "board «", 1)
+
+
 def do_file(arg: str, body: str, dry: bool):
     path = arg.strip().lstrip("/")
     low = path.lower()
@@ -192,6 +208,7 @@ ACTIONS = {
     "issue": do_issue,
     "discussion": do_discussion,
     "file": do_file,
+    "board": do_board,
 }
 
 
