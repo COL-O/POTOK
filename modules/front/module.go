@@ -100,5 +100,5 @@ func (m *Module) onAntibody(ctx context.Context, ev core.Event) error {
 // Publish — публикация рейса (для внешних вызовов).
 func (m *Module) Publish(ctx context.Context, flight contracts.FlightEvent) error {
 	return m.bus.Publish(ctx, "front",
-		[]string{"polygon", "growth", "stratos"}, "FlightEvent", flight)
+		[]string{"polygon", "growth", "stratos", "front"}, "FlightEvent", flight)
 }
