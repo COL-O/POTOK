@@ -1,0 +1,398 @@
+{
+  "version": 8,
+  "dashboardId": "7529073235594313728",
+  "title": "Состояние организма ПОТОКА",
+  "description": "История тактов, удивления и событий ДОМОВОГО. Ведёт Русло.",
+  "role": "",
+  "owner": "admin@example.com",
+  "created": "2026-11-19T06:49:02.770643361Z",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Обзор",
+      "panels": [
+        {
+          "id": "7529073453219971072",
+          "type": "line",
+          "title": "Пульс организма (такты)",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_bus_published) as y from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 48,
+            "h": 12,
+            "i": 1
+          }
+        },
+        {
+          "id": "7529073527148773376",
+          "type": "bar",
+          "title": "Удивление (front)",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_front_surprise_count) as y from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 48,
+            "y": 0,
+            "w": 48,
+            "h": 12,
+            "i": 2
+          }
+        },
+        {
+          "id": "7529073527199105024",
+          "type": "area",
+          "title": "Диагнозы и вето (polygon)",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_polygon_diagnosed_count) as y from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 12,
+            "w": 48,
+            "h": 12,
+            "i": 3
+          }
+        },
+        {
+          "id": "7529073527245242368",
+          "type": "bar",
+          "title": "События ДОМОВОГО по часам",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 hour') as x, count(*) as y from agent_events group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "agent_events",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 48,
+            "y": 12,
+            "w": 48,
+            "h": 12,
+            "i": 4
+          }
+        },
+        {
+          "id": "7529073527270408192",
+          "type": "line",
+          "title": "Шина: опубликовано и ошибки",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_bus_published) as y, max(snapshot_bus_boundserrors) as err from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 24,
+            "w": 48,
+            "h": 12,
+            "i": 5
+          }
+        },
+        {
+          "id": "7529073527308156928",
+          "type": "line",
+          "title": "Иммунитет: антитела и вето",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_polygon_antibodies_sent) as antibodies, max(snapshot_front_veto_blocked) as veto_blocked from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 48,
+            "y": 24,
+            "w": 48,
+            "h": 12,
+            "i": 6
+          }
+        },
+        {
+          "id": "7529073527345905664",
+          "type": "line",
+          "title": "Законы stratos: записано и отозвано",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select histogram(_timestamp, '1 minute') as x, max(snapshot_stratos_laws_recorded) as recorded, max(snapshot_growth_evolved_laws_count) as evolved from potok_metrics group by x order by x",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "potok_metrics",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 36,
+            "w": 96,
+            "h": 12,
+            "i": 7
+          }
+        },
+        {
+          "id": "7529073527379460096",
+          "type": "table",
+          "title": "Свежие события ДОМОВОГО",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select _timestamp, kind, action, result from agent_events order by _timestamp desc",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "agent_events",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 48,
+            "w": 96,
+            "h": 14,
+            "i": 8
+          }
+        },
+        {
+          "id": "7529073770540040192",
+          "type": "bar",
+          "title": "Виды событий ДОМОВОГО",
+          "description": "",
+          "config": {
+            "show_legends": false,
+            "legends_position": null,
+            "base_map": null,
+            "map_view": null
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "select kind as x, count(*) as y from agent_events group by x order by y desc",
+              "vrlFunctionQuery": null,
+              "customQuery": false,
+              "fields": {
+                "stream": "agent_events",
+                "stream_type": "logs",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 62,
+            "w": 48,
+            "h": 12,
+            "i": 9
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  }
+}
