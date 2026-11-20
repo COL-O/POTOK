@@ -84,6 +84,10 @@ type Router struct {
 	EscalatedGrowth atomic.Uint64
 	VetoBlocked     atomic.Uint64
 	DemotedReflexes atomic.Uint64
+	// OrgansOutOfBounds — сколько раз орган из маски не смог быть выполнен,
+	// потому что вышел за свою применимость (КОН 10: граница фиксируется,
+	// а не скрывается). Такт не обрушается: остальные органы маски отрабатывают.
+	OrgansOutOfBounds atomic.Uint64
 }
 
 func NewRouter(
@@ -188,8 +192,12 @@ func (r *Router) Step(eventID uint64) (bus.Verdict, error) {
 			continue
 		}
 		if !org.InBounds(view) {
-			r.triggerSurpriseWithResonanceCheck(now, baseView.Header, hdcVerdict.ActionCode)
-			return bus.Verdict{OrganID: organID, Status: bus.StatusOutOfBounds}, nil
+			// КОН 10: граница органа — факт, фиксируем в телеметрии,
+			// но не обрушаем такт: остальные органы маски отрабатывают.
+			// Вырожденный случай «никто не отработал» разруливает Confidence Gate ниже.
+			r.OrgansOutOfBounds.Add(1)
+			r.Heatmap[organID].Add(1)
+			continue
 		}
 		v, m := org.Process(view)
 		r.Heatmap[organID].Add(1)

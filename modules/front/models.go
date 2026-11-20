@@ -202,7 +202,7 @@ func (o *TTLOrgan) Spec() bus.OrganSpec {
 		WriteLane:   bus.LanePulse,
 		Residency:   bus.ResidencyPinned,
 		SoftTimeout: 1 * time.Microsecond,
-		HardTimeout: 5 * time.Microsecond,
+		HardTimeout: 50 * time.Microsecond,
 	}
 }
 
@@ -382,7 +382,7 @@ func (o *PasportOrgan) Spec() bus.OrganSpec {
 		WriteLane:   bus.LaneMeta,
 		Residency:   bus.ResidencyPinned,
 		SoftTimeout: 1 * time.Microsecond,
-		HardTimeout: 5 * time.Microsecond,
+		HardTimeout: 50 * time.Microsecond,
 	}
 }
 
