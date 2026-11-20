@@ -318,11 +318,13 @@ func main() {
 	polyVerdict, audit2, _ := polygonRouter.Diagnose(id2)
 	fmt.Printf("[Такт 2 | polygon] Диагноз поставлен: Cause=%d, Antibody=%d, Confidence=%.2f\n", audit2.CauseCode, polyVerdict.ActionCode, polyVerdict.Confidence)
 
-	series2 := []float32{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 18.0, 21.0, 23.0, 25.0}
+	// Аномалия законна, но не узнана HDC (как в полёте): dx=const=2.2.
+	// Прежняя серия со скачком не была функцией dx=f(x) — growth браковал закон (6002).
+	series2 := []float32{1.0, 3.2, 5.4, 7.6, 9.8, 12.0, 14.2, 16.4, 18.6, 20.8, 23.0, 25.2}
 	tOff2, _ := coreBus.Tensors.Write4D(0, [4]uint16{1, 1, 1, 12}, series2)
 	id3 := coreBus.Publish(&anomalyHDC, gOff1, tOff2, 40, 220)
 	_, _, _ = polygonRouter.Diagnose(id3)
-	fmt.Printf("[Такт 3 | polygon] Выход за паспорт KAN (25.0 > 10.0) -> Эскалация в growth!\n")
+	fmt.Printf("[Такт 3 | polygon] Выход за паспорт KAN (%.1f > 10.0) -> Эскалация в growth!\n", series2[len(series2)-1])
 	evoAudit, _ := growthRouter.Evolve(id3, 77, front.BitDStarLite)
 	fmt.Printf("[Такт 3 | growth]  Выведен новый закон Gen#%d: Guard=[%.1f..%.1f], BlackSwans=%d/%d, Alpha=%.1f\n", evoAudit.GenerationID, evoAudit.GuardMin, evoAudit.GuardMax, evoAudit.PassedSwans, evoAudit.TotalSwans, evoAudit.AlphaBlend)
 
