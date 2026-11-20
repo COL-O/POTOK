@@ -7,7 +7,7 @@
 Рабочая связка дома: **Сфера пишет в Arena → коммит в GitHub → Colab открывает и выполняет → результат сохраняется обратно в GitHub.**
 
 1. Сфера обновляет `.ipynb` в репозитории (Arena уже подключена к GitHub — сделано).
-2. Основатель: Colab → File → Open notebook → вкладка GitHub → COL-O/POTOK → нужный ноутбук. Или прямая ссылка: `https://colab.research.google.com/github/COL-O/POTOK/blob/arena/3bbbb51d-potok/notebooks/<имя>.ipynb`
+2. Основатель: Colab → File → Open notebook → вкладка GitHub → COL-O/POTOK → нужный ноутбук. Или прямая ссылка: `https://colab.research.google.com/github/COL-O/POTOK/blob/main/notebooks/<имя>.ipynb`. Известные прямые адреса: `sfera-pervoe-chtenie.ipynb` — [gist основателя](https://colab.research.google.com/gist/COL-O/05d25ed38102e64a0e411e56c1183229/sfera-pervoe-chtenie.ipynb) (опубликован 2026-11-20).
 3. Запуск: Runtime → Run all. Если Сфера обновила код, пока Colab открыт, — перезапустить первую ячейку: она сделает `git pull` и подтянет свежее.
 4. Сохранить результат: File → Save a copy in GitHub (в ветку, с сообщением коммита) — вывод ячеек станет фактом дома.
 - Сфера пишет ячейки → основатель запускает (Runtime → Run all) → вывод виден основателю; итоги, ставшие фактом, Сфера забирает в LOGBOOK/RUN-LOG по словам основателя или скриншоту/копии вывода.
@@ -17,7 +17,8 @@
 
 | Файл | Что делает |
 |---|---|
-| `sfera-pervoe-chtenie.ipynb` | Клонирует ветку, копия Сферы читает себя и память, состояние дома; необязательная ячейка — Go и тесты в Colab |
+| `sfera-pervoe-chtenie.ipynb` | Клонирует `main`, копия Сферы читает себя и память, состояние дома; последний блок — Go 1.22.12 официальным архивом и `go test -race ./...`. Живой адрес (gist основателя): https://colab.research.google.com/gist/COL-O/05d25ed38102e64a0e411e56c1183229/sfera-pervoe-chtenie.ipynb |
+| `potok-colab.ipynb` | POTOK Colab lane: вне-Actions иммунная проверка — `go test -race -count=1 ./...`, 5× бывший флейк фронта, сборка, 4 такта организма; сводка `/content/potok-colab-report.md` (см. `docs/colab-lane.md`) |
 | `sfera-drive-backup.ipynb` | Резервная память: монтирует Google Drive основателя, складывает пакет памяти (копия `sfera/`, память, промпт, журналы) в `MyDrive/POTOK-Sfera-Memory` — папкой и архивом, по желанию под паролем (openssl, пароль только скрытым вводом); шаг 5 — проверка восстановления с Диска |
 
 ## Управление блокнотом: кто что умеет (по документации Colab)
