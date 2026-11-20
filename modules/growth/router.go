@@ -156,11 +156,6 @@ func (r *Router) Evolve(eventID uint64, targetCauseCode uint32, vetoToRehabilita
 		eq = *(*SINDyEquation)(unsafe.Pointer(&scratch[0]))
 		eq.EquationID = genID
 		audit.Equation = eq
-		// LUT-KAN читает уравнение из начала СВОЕЙ области scratch (смещение 0),
-		// а не из SINDy-области — поэтому SINDy-уравнение копируется в область LUT-KAN.
-		if len(scratch) >= 64+int(unsafe.Sizeof(SINDyEquation{})) {
-			*(*SINDyEquation)(unsafe.Pointer(&scratch[64])) = eq
-		}
 	}
 
 	res := r.lutkan.Resolution
@@ -170,7 +165,7 @@ func (r *Router) Evolve(eventID uint64, targetCauseCode uint32, vetoToRehabilita
 	var compiled CompiledLUT
 	if len(scratch) >= 64+(res+2)*4 {
 		lutView := view
-		lutView.Scratch = scratch[64:]
+		lutView.Scratch = scratch
 		lutVerdict, _ := r.lutkan.Process(lutView)
 		r.Heatmap[OrganIDLUTKAN].Add(1)
 		if lutVerdict.Status != bus.StatusOK {
