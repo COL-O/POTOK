@@ -1,0 +1,57 @@
+name: Sfera inbox (хозяйка)
+
+# Мост «Сфера-хозяйка»: почтовый ящик в репозитории.
+# Сфера (канал Arena, бот sfera-potok[bot]) кладёт файл inbox/sfera.md
+# с директивами — Actions исполняет их от github-actions[bot]:
+# комментарий в чат, новая задача, обсуждение, запись файла в ветку.
+#
+# Ключ приложения сюда не попадает: воркфлоу работает штатным GITHUB_TOKEN,
+# которому хватает contents/issues/discussions/PR внутри этого репозитория.
+#
+# Формат директив — inbox/README.md и scripts/sfera_inbox.py.
+
+on:
+  push:
+    branches: [main, "arena/**"]
+    paths:
+      - "inbox/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  discussions: write
+  pull-requests: write
+
+# Два пуша подряд не должны наступать друг другу на очистку
+concurrency:
+  group: sfera-inbox-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  act:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Исполнить директивы Сферы
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DEFAULT_ISSUE: "4"
+          CHAT_DISCUSSION: "12"
+        run: python3 scripts/sfera_inbox.py inbox
+
+      - name: Убрать исполненные файлы
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain inbox)" ]; then
+            echo "нечего очищать"
+            exit 0
+          fi
+          git config user.name "sfera-inbox[bot]"
+          git config user.email "sfera-inbox@users.noreply.github.com"
+          git add -A inbox
+          git commit -m "bridge: inbox исполнен и очищен"
+          # Гонка с параллельным прогоном: сначала rebase, потом повтор
+          git push || { git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && git push; }

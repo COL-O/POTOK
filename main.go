@@ -8,18 +8,18 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/COL-O/POTOK/contracts"
-	"github.com/COL-O/POTOK/core"
-	"github.com/COL-O/POTOK/links"
-	"github.com/COL-O/POTOK/modules/bim"
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/graph"
-	"github.com/COL-O/POTOK/modules/growth"
-	"github.com/COL-O/POTOK/modules/growth/projector"
-	"github.com/COL-O/POTOK/modules/polygon"
-	"github.com/COL-O/POTOK/modules/seed"
-	"github.com/COL-O/POTOK/modules/store/memory"
-	"github.com/COL-O/POTOK/modules/stratos"
+	"organism/contracts"
+	"organism/core"
+	"organism/links"
+	"organism/modules/bim"
+	"organism/modules/front"
+	"organism/modules/graph"
+	"organism/modules/growth"
+	"organism/modules/growth/projector"
+	"organism/modules/polygon"
+	"organism/modules/seed"
+	"organism/modules/store/memory"
+	"organism/modules/stratos"
 )
 
 func main() {
@@ -74,11 +74,12 @@ func main() {
 	_ = reg.Register(growthMod, core.Manifest{Name: "growth", Role: core.RoleGrowth, Layer: core.LayerGrowth, Enabled: true})
 	_ = reg.Register(stratosMod, core.Manifest{Name: "stratos", Role: core.RoleMemory, Layer: core.LayerStratos, Enabled: true})
 
-	// Мостики через шину реестра.
-	links.ConnectPolygonFront(polygonMod, frontMod, reg.Bus())
-	links.ConnectPolygonGrowth(polygonMod, growthMod, reg.Bus())
-	links.ConnectGrowthStratos(growthMod, stratosMod, reg.Bus())
-	links.ConnectStratosAll(stratosMod, reg.Bus())
+	// Мостики через общую шину событий.
+	eventBus := core.NewEventBus()
+	links.ConnectPolygonFront(polygonMod, frontMod, eventBus)
+	links.ConnectPolygonGrowth(polygonMod, growthMod, eventBus)
+	links.ConnectGrowthStratos(growthMod, stratosMod, eventBus)
+	links.ConnectStratosAll(stratosMod, eventBus)
 	links.ConnectFrontParquet(frontMod, st)
 
 	// 8. Старт.

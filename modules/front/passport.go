@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
 )
 
 // RecordPassport — запись паспорта качества (Pasport из набора front).

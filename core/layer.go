@@ -1,27 +1,69 @@
-// Package core — ядро организма: слои, манифесты, модули, шина, реестр.
-//
-// Структура пакета по авторскому фундаменту:
-// layer.go (Layer, Role), manifest.go (Manifest модуля),
-// module.go (Module, Env), eventbus.go (Event, EventBus),
-// registry.go (Registry), errors.go (ошибки манифеста/реестра).
 package core
 
-// Layer — слой организма (у каждого своё характерное время).
-type Layer string
+// Layer — к какому времени относится модуль.
+type Layer uint8
 
 const (
-	LayerFront   Layer = "front"   // Рефлекс: наносекунды–миллисекунды
-	LayerPolygon Layer = "polygon" // Иммунитет: минуты–часы
-	LayerGrowth  Layer = "growth"  // Рост: часы–дни
-	LayerStratos Layer = "stratos" // Память: годы–века
+	LayerFront   Layer = 1
+	LayerPolygon Layer = 2
+	LayerGrowth  Layer = 3
+	LayerStratos Layer = 4
+	LayerCross   Layer = 0
 )
 
-// Role — роль слоя в организме.
-type Role string
+func (l Layer) String() string {
+	switch l {
+	case LayerFront:
+		return "front"
+	case LayerPolygon:
+		return "polygon"
+	case LayerGrowth:
+		return "growth"
+	case LayerStratos:
+		return "stratos"
+	case LayerCross:
+		return "cross"
+	default:
+		return "unknown"
+	}
+}
+
+// Role — что модуль делает в организме.
+type Role uint8
 
 const (
-	RoleReflex   Role = "reflex"
-	RoleImmunity Role = "immunity"
-	RoleGrowth   Role = "growth"
-	RoleMemory   Role = "memory"
+	RoleReflex Role = iota
+	RoleImmunity
+	RoleGrowth
+	RoleMemory
+	RoleStore
+	RoleGraph
+	RoleBIM
+	RoleSeed
+	RoleProjector
 )
+
+func (r Role) String() string {
+	switch r {
+	case RoleReflex:
+		return "reflex"
+	case RoleImmunity:
+		return "immunity"
+	case RoleGrowth:
+		return "growth"
+	case RoleMemory:
+		return "memory"
+	case RoleStore:
+		return "store"
+	case RoleGraph:
+		return "graph"
+	case RoleBIM:
+		return "bim"
+	case RoleSeed:
+		return "seed"
+	case RoleProjector:
+		return "projector"
+	default:
+		return "unknown"
+	}
+}

@@ -1,8 +1,8 @@
 package links
 
 import (
-	"github.com/COL-O/POTOK/modules/front"
-	"github.com/COL-O/POTOK/modules/store"
+	"organism/modules/front"
+	"organism/modules/store"
 )
 
 // ConnectFrontParquet — мостик front ↔ Parquet: закрытые смены front

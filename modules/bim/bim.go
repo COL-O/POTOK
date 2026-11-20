@@ -2,7 +2,7 @@
 // CBS из polygon берёт отсюда capacity; projector — ограничения.
 package bim
 
-import "github.com/COL-O/POTOK/contracts"
+import "organism/contracts"
 
 // BIM — индекс рабочих центров по заводам.
 type BIM struct {

@@ -1,20 +1,59 @@
 package contracts
 
-// PassportResult — вердикт паспорта качества.
-type PassportResult string
-
-const (
-	PassportPass   PassportResult = "pass"
-	PassportFail   PassportResult = "fail"
-	PassportRework PassportResult = "rework"
+import (
+	"fmt"
+	"time"
 )
 
-// QualityPassport — паспорт качества (Pasport из набора front).
-type QualityPassport struct {
-	PassportID string         `json:"passport_id"`
-	FactoryID  uint16         `json:"factory_id"`
-	ProductID  uint32         `json:"product_id"`
-	Grade      string         `json:"grade"`
-	Result     PassportResult `json:"result"`
-	IssuedAt   int64          `json:"issued_at"`
+// PassportResult — результат ОТК.
+type PassportResult uint8
+
+const (
+	PassportPassed PassportResult = iota
+	PassportFailed
+	PassportRework
+)
+
+func (r PassportResult) String() string {
+	switch r {
+	case PassportPassed:
+		return "passed"
+	case PassportFailed:
+		return "failed"
+	case PassportRework:
+		return "rework"
+	default:
+		return "unknown"
+	}
 }
+
+// QualityPassport — паспорт качества.
+type QualityPassport struct {
+	Meta
+
+	PassportID  string         `json:"passport_id"`
+	FlightID    string         `json:"flight_id"`
+	TraceID     string         `json:"trace_id"`
+	Result      PassportResult `json:"result"`
+	Reason      string         `json:"reason,omitempty"`
+	InspectedAt time.Time      `json:"inspected_at"`
+	Inspector   string         `json:"inspector,omitempty"`
+}
+
+func (p *QualityPassport) Validate() error {
+	if err := p.Meta.Validate(); err != nil {
+		return err
+	}
+	if p.PassportID == "" {
+		return ErrNoPassport
+	}
+	if p.FlightID == "" {
+		return ErrNoFlightID
+	}
+	if p.Result > PassportRework {
+		return fmt.Errorf("passport: неизвестный result %d", p.Result)
+	}
+	return nil
+}
+
+func (p *QualityPassport) IsHelp() bool { return true }

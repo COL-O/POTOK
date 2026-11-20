@@ -3,7 +3,7 @@ package seed
 import (
 	"fmt"
 
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
 )
 
 // generateBIM — генерация рабочих центров и маршрутов.

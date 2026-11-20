@@ -1,0 +1,9 @@
+{
+  "name": "gha-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Проверка воркфлоу GitHub Actions: существование экшенов, покрытие веток, совместимость конфига линтера",
+  "type": "module",
+  "bin": { "gha-check": "check.mjs" },
+  "dependencies": { "js-yaml": "4.1.0" }
+}

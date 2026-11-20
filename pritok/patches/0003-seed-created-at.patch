@@ -1,0 +1,62 @@
+# Патч 0003 — seed: created_at в Meta (modules/seed/*.go)
+#
+# Адрес: modules/seed/factories.go (Meta завода), modules/seed/seed.go (Generator).
+# Причина: Meta создаётся без CreatedAt, а сразу ниже вызывается f.Validate() →
+#   Meta.Validate() → ErrNoCreatedAt. Значит seed.Generate() падает ДО генерации мира:
+#   `go run .` в доме не стартует, оба теста seed красные («seed ×2: нет created_at»
+#   в docs/PROJECT-STATUS.md).
+# Правка: у Generator есть единая метка мира createdAt (time.Now().UTC() в NewGenerator),
+#   она попадает в Meta завода. Импорт `time` добавлен в seed.go.
+#   Рабочие центры и связи не тронуты намеренно: у WorkCenter и Connection в contracts
+#   НЕТ встроенного Meta (см. contracts/suggestion.go) — их Meta-полей не существует,
+#   решать это должен круг (добавить Meta в контракты или убрать из генератора).
+# Проверено: чтение контрактов + gocheck на клоне дома — чисто (сначала чекер поймал
+#   мой пропущенный импорт `time`, исправлено до оформления патча).
+# НЕ проверено: `go test` — нужен прогон у основателя/CI.
+# Применение из корня дома:
+#   git apply --check pritok/patches/0003-seed-created-at.patch && git apply pritok/patches/0003-seed-created-at.patch
+--- a/modules/seed/factories.go
++++ b/modules/seed/factories.go
+@@ -50,9 +50,10 @@ func (g *Generator) generateFactories() error {
+ 
+ 			f := contracts.Factory{
+ 				Meta: contracts.Meta{
+-					Source:  "seed",
+-					Targets: []string{"front", "polygon", "growth"},
+-					Branch:  "main",
++					Source:    "seed",
++					Targets:   []string{"front", "polygon", "growth"},
++					CreatedAt: g.createdAt, // Validate требует created_at (ErrNoCreatedAt)
++					Branch:    "main",
+ 				},
+ 				ID:              id,
+ 				Code:            code,
+--- a/modules/seed/seed.go
++++ b/modules/seed/seed.go
+@@ -10,6 +10,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"math/rand"
++	"time"
+ 
+ 	"organism/contracts"
+ 	"organism/core"
+@@ -77,6 +78,10 @@ type Generator struct {
+ 
+ 	parentToChildren map[uint32][]uint32
+ 	generated        bool
++
++	// createdAt — единая метка времени мира: мир генерируется одним актом,
++	// и все сущности должны иметь created_at (иначе Meta.Validate отвергает их).
++	createdAt time.Time
+ }
+ 
+ // NewGenerator — генератор с конфигом.
+@@ -86,6 +91,7 @@ func NewGenerator(cfg Config) *Generator {
+ 		rng:              rand.New(rand.NewSource(cfg.Seed)),
+ 		intern:           contracts.NewInternDictionary(),
+ 		parentToChildren: make(map[uint32][]uint32),
++		createdAt:        time.Now().UTC(),
+ 	}
+ }
+ 

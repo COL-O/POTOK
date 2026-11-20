@@ -1,0 +1,64 @@
+{
+  "title": "ORGANISM — Тепловая карта и 4 контура времени (КОН 10)",
+  "uid": "organism-core-v1",
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Шина: Опубликовано импульсов",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "organism_bus_published_total", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Front: Эскалаций Surprise",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "organism_front_surprise_total", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Front: Блокировок VetoMask",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "organism_front_veto_blocked_total", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Growth: Выведено новых законов",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "organism_growth_evolved_laws_total", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Динамика тактов и аномалий (Front vs Polygon)",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(organism_bus_published_total[1m])", "legendFormat": "Пульс (имп/с)", "refId": "A" },
+        { "expr": "rate(organism_front_surprise_total[1m])", "legendFormat": "Surprise (сбои/с)", "refId": "B" },
+        { "expr": "rate(organism_polygon_diagnosed_total[1m])", "legendFormat": "Диагнозы Polygon/с", "refId": "C" }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "bargauge",
+      "title": "Тепловая карта органов (Heatmap — активность 24 слотов)",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "orientation": "horizontal", "displayMode": "gradient" },
+      "targets": [
+        { "expr": "organism_organ_hits_total", "legendFormat": "{{layer}}: {{organ}}", "refId": "A" }
+      ]
+    }
+  ]
+}

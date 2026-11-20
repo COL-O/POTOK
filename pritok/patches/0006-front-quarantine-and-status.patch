@@ -1,0 +1,39 @@
+# Патч 0006 — кварантин при равной уверенности (modules/front/router.go)
+#
+# Откуда известно (не догадка): сохранённый вывод Colab в
+#   notebooks/sfera-pervoe-chtenie.ipynb, ячейка 9:
+#   "router_test.go:101: expected FlagInQuarantine from shadow candidate"
+# Строка 101 — ПОСЛЕДНЯЯ проверка теста, значит всё до неё прошло:
+# статус OK, уверенность >= 0.90, VetoBlocked == 1, DStarLite не исполнялся,
+# FlagVetoTriggered стоит. Не хватает только FlagInQuarantine.
+#
+# Адрес: modules/front/router.go:311 (в доме на 5374239) —
+#   `if sim >= cand.MinSim && sim > activeVerdict.Confidence {`
+# Причина: тест подаёт теневого кандидата из НУЛЕВОГО HDC-шаблона, кадр — тоже нулевой.
+#   Сходство sim = 1.0; активный вердикт тоже 1.0 (нулевой кадр идеально совпал со своим
+#   нулевым прототипом). Строгое `>` не выполняется — флаг не ставится.
+# Почему правка верна по смыслу, а не «под тест»: кварантин существует ровно для случая
+#   «похоже на опасный класс, даже если активный ответ уверен». Равная уверенность —
+#   не повод игнорировать опасный класс. `>=` соответствует замыслу, `>` — нет.
+#
+# Проверено: чтение кода + сохранённый лог Colab (адрес падения). gocheck — чисто.
+# НЕ проверено: прогон `go test -race ./modules/front/` с этим патчем (Go в песочнице нет).
+# Применение: git apply pritok/patches/0006-front-quarantine-and-status.patch
+
+diff --git a/modules/front/router.go b/modules/front/router.go
+index b083b82..88400f9 100644
+--- a/modules/front/router.go
++++ b/modules/front/router.go
+@@ -308,7 +308,11 @@ func (r *Router) evaluateQuarantineShadow(view bus.TickView, activeVerdict bus.V
+ 			diff += bits.OnesCount64(view.HDC.Words[w] ^ cand.Pattern.Words[w])
+ 		}
+ 		sim := 1.0 - (float32(diff) / totalBits)
+-		if sim >= cand.MinSim && sim > activeVerdict.Confidence {
++		// Кварантин — это «похоже на опасный класс, даже если активный ответ уверен».
++		// Строгое `>` отказывало в кварантине при РАВНОЙ уверенности: нулевой кадр
++		// совпадает с нулевым шаблоном на 1.0, активный вердикт тоже 1.0 — флаг не
++		// ставился (падение TestRouterRoutineVetoAndQuarantine, router_test.go:101).
++		if sim >= cand.MinSim && sim >= activeVerdict.Confidence {
+ 			r.setFlag(view.Header, bus.FlagInQuarantine)
+ 			break
+ 		}

@@ -1,0 +1,132 @@
+# Патч 0007 — seed: created_at во ВСЕХ Meta (закрывает патч 0003 в один)
+#
+# Почему появился. Патч 0003 добавлял CreatedAt только в Meta завода — этого
+# хватило, чтобы ошибка переехала с завода на «work center»:
+#   было:  factory "quarry_01": contracts: нет created_at
+#   стало: bim: work center: contracts: нет created_at
+# Причина: contracts.Meta встроена не только в Factory, но и в WorkCenter,
+# Connection, продукт, спецификацию (contracts/suggestion.go, bim.go, bom.go).
+# Проверено теперь настоящим прогоном, а не чтением — см. ниже.
+#
+# Что правит: modules/seed/{bim,bom,products,factories}.go — в каждый литерал
+# contracts.Meta добавляет CreatedAt: g.createdAt; модуль seed берёт единую
+# метку мира из Generator (см. seed.go, генератор NewGenerator).
+#
+# ПРОВЕРЕНО ПРОГОНОМ (2026-11-19, go1.22.12, собранный из исходников в песочнице):
+#   до патчей:  7 падающих тестов
+#   после 0001–0006 + этот: 4 падающих
+#   modules/seed: было FAIL (2 теста) -> стало ok
+#   go build ./... : 0 ошибок; go vet ./... : чисто; gofmt: чисто
+#
+# Чем окружение отличалось от CI (честно):
+#   - -race НЕ запускался: для -race нужен cgo, а собранный из исходников
+#     тулчейн без cgo (CGO_ENABLED=0). Это ограничение прогона, не кода.
+#   - golang.org/x/sys подменён локальным деревом через go mod edit -replace:
+#     proxy.golang.org из песочницы недоступен. В go.mod правка НЕ вносится.
+#
+diff --git a/modules/seed/bim.go b/modules/seed/bim.go
+index 2f12863..ef27a15 100644
+--- a/modules/seed/bim.go
++++ b/modules/seed/bim.go
+@@ -18,7 +18,7 @@ func (g *Generator) generateBIM() error {
+ 		n := 2 + g.rng.Intn(4)
+ 		for i := 0; i < n; i++ {
+ 			wc := contracts.WorkCenter{
+-				Meta:      contracts.Meta{Source: "seed", Targets: []string{"projector", "front"}, Branch: "main"},
++				Meta:      contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"projector", "front"}, Branch: "main"},
+ 				ID:        wcID,
+ 				FactoryID: f.ID,
+ 				Type:      "line",
+@@ -41,7 +41,7 @@ func (g *Generator) generateBIM() error {
+ 		}
+ 		for i := 0; i < len(wcs)-1; i++ {
+ 			c := contracts.Connection{
+-				Meta:       contracts.Meta{Source: "seed", Targets: []string{"front", "bim"}, Branch: "main"},
++				Meta:       contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "bim"}, Branch: "main"},
+ 				FromID:     wcs[i],
+ 				ToID:       wcs[i+1],
+ 				DistanceM:  int32(10 + g.rng.Intn(90)),
+diff --git a/modules/seed/bom.go b/modules/seed/bom.go
+index 0e0f644..3fabc57 100644
+--- a/modules/seed/bom.go
++++ b/modules/seed/bom.go
+@@ -52,7 +52,7 @@ func (g *Generator) linkLayers(parents, children []contracts.Product, rawDirect
+ 				transit = int32(3600 + g.rng.Intn(86400))
+ 			}
+ 			edge := contracts.BOMEdge{
+-				Meta:       contracts.Meta{Source: "seed", Targets: []string{"graph", "projector"}, Branch: "main"},
++				Meta:       contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"graph", "projector"}, Branch: "main"},
+ 				ParentID:   parent.ID,
+ 				ChildID:    child.ID,
+ 				FactoryID:  fid,
+diff --git a/modules/seed/factories.go b/modules/seed/factories.go
+index cff475d..99b94b1 100644
+--- a/modules/seed/factories.go
++++ b/modules/seed/factories.go
+@@ -50,9 +50,10 @@ func (g *Generator) generateFactories() error {
+ 
+ 			f := contracts.Factory{
+ 				Meta: contracts.Meta{
+-					Source:  "seed",
+-					Targets: []string{"front", "polygon", "growth"},
+-					Branch:  "main",
++					Source:    "seed",
++					Targets:   []string{"front", "polygon", "growth"},
++					CreatedAt: g.createdAt, // Validate требует created_at (ErrNoCreatedAt)
++					Branch:    "main",
+ 				},
+ 				ID:              id,
+ 				Code:            code,
+diff --git a/modules/seed/products.go b/modules/seed/products.go
+index b5f541d..eb71f69 100644
+--- a/modules/seed/products.go
++++ b/modules/seed/products.go
+@@ -21,7 +21,7 @@ func (g *Generator) generateProducts() error {
+ 				return err
+ 			}
+ 			p := contracts.Product{
+-				Meta:     contracts.Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
++				Meta:     contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
+ 				ID:       id,
+ 				SKU:      sku,
+ 				Layer:    contracts.LayerRaw,
+@@ -58,7 +58,7 @@ func (g *Generator) generateLayerProducts(prefix string, n int, layer contracts.
+ 			continue
+ 		}
+ 		out = append(out, contracts.Product{
+-			Meta:     contracts.Meta{Source: "seed", Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
++			Meta:     contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"front", "polygon", "growth"}, Branch: "main"},
+ 			ID:       id,
+ 			SKU:      sku,
+ 			Layer:    layer,
+diff --git a/modules/seed/seed.go b/modules/seed/seed.go
+index 87993ac..f0e36d1 100644
+--- a/modules/seed/seed.go
++++ b/modules/seed/seed.go
+@@ -10,6 +10,7 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"math/rand"
++	"time"
+ 
+ 	"organism/contracts"
+ 	"organism/core"
+@@ -77,6 +78,10 @@ type Generator struct {
+ 
+ 	parentToChildren map[uint32][]uint32
+ 	generated        bool
++
++	// createdAt — единая метка времени мира: мир генерируется одним актом,
++	// и все сущности должны иметь created_at (иначе Meta.Validate отвергает их).
++	createdAt time.Time
+ }
+ 
+ // NewGenerator — генератор с конфигом.
+@@ -86,6 +91,7 @@ func NewGenerator(cfg Config) *Generator {
+ 		rng:              rand.New(rand.NewSource(cfg.Seed)),
+ 		intern:           contracts.NewInternDictionary(),
+ 		parentToChildren: make(map[uint32][]uint32),
++		createdAt:        time.Now().UTC(),
+ 	}
+ }
+ 

@@ -3,7 +3,8 @@ package front
 import (
 	"context"
 
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
+	"organism/core"
 )
 
 // RunRule — запуск правила при сбое (антитело от polygon применяется здесь).

@@ -1,0 +1,27 @@
+services:
+  organism:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: organism-core
+    ports:
+      - "8080:8080"
+      - "9000:9000/udp"
+    volumes:
+      - stratos_wal:/var/lib/organism/stratos
+    cap_add:
+      - IPC_LOCK
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 3s
+    restart: unless-stopped
+volumes:
+  stratos_wal:
+    driver: local

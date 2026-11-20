@@ -1,6 +1,6 @@
 package growth
 
-import "github.com/COL-O/POTOK/contracts"
+import "organism/contracts"
 
 // SpawnPilot — создание почки (Завод 100+1): новый завод-пилот
 // в режиме развёртывания на ветке pilot:100+1.

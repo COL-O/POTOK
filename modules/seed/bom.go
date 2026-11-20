@@ -1,7 +1,7 @@
 package seed
 
 import (
-	"github.com/COL-O/POTOK/contracts"
+	"organism/contracts"
 )
 
 // generateBOM — генерация BOM-связей по слоям.

@@ -1,0 +1,190 @@
+# Патч 0005 — сквозная цепочка на одной шине (core, links, main, modules/*)
+#
+# Адреса в доме на 5374239:
+#   core/registry.go:63 — `env := &Env{Registry: r, Bus: NewEventBus()}` внутри StartAll.
+#   links/polygon_front.go, links/polygon_growth.go, links/growth_stratos.go,
+#   links/stratos_all.go — заглушки `_ = p; _ = f; _ = bus`: связь обещана, но не создана.
+#   main.go:81-82 — `eventBus := core.NewEventBus()` создаётся ПОСЛЕ reg.Register
+#                   и никуда не передаётся; StartAll всё равно раздаст модулям свои шины.
+#
+# Причина (проверено чтением, не догадка):
+#   TestOrganismChainOnStuckFlight (organism_test.go:22) требует, чтобы FlightEvent,
+#   опубликованный front.Publish, дошёл до polygon/growth/stratos. Сейчас каждый
+#   модуль получает СВОЮ шину, поэтому подписка и публикация живут в разных мирах:
+#   цепочка рвётся на первом шаге.
+#   Отдельно проверено и НЕ подтвердилось: будто front не публикует FlightStuck.
+#   Публикует — modules/front/module.go:84 (`if flight.Status == contracts.StatusStuck`).
+#   То есть ломается не машина состояний, а доставка событий.
+#
+# Правка (сверху вниз, без переписывания слоёв):
+#   1. core: у реестра появляется SetBus; StartAll отдаёт модулям общую шину.
+#   2. modules/{front,polygon,growth,stratos}: SetBus — мостик links.
+#   3. links/*: мостики перестают быть заглушками и передают шину модулям.
+#   4. main.go: шина создаётся ДО реестра и отдаётся ему.
+#
+# Проверено: gocheck на чистом клоне дома (114 файлов, 29 пакетов) — 0 проблем;
+#            git apply --check на 5374239 — OK.
+# НЕ проверено: go test -race ./... — Go в песочнице нет. Скажет прогон у основателя или CI.
+# Применение из корня дома:
+#   git apply --check pritok/patches/0005-links-real-wiring.patch && \
+#     git apply pritok/patches/0005-links-real-wiring.patch && go test -race ./...
+
+diff --git a/core/registry.go b/core/registry.go
+index 4a1d3e7..f887356 100644
+--- a/core/registry.go
++++ b/core/registry.go
+@@ -30,6 +30,14 @@ func NewRegistry() Registry {
+ 	}
+ }
+ 
++// SetBus задаёт общую шину организма. Без него StartAll создаёт каждому
++// модулю свою шину, и модули не слышат друг друга.
++func (r *registry) SetBus(b EventBus) {
++	if b != nil {
++		r.bus = b
++	}
++}
++
+ func (r *registry) Register(m Module, manifest Manifest) error {
+ 	if err := manifest.Validate(); err != nil {
+ 		return err
+diff --git a/links/growth_stratos.go b/links/growth_stratos.go
+index 9b0484d..dc16994 100644
+--- a/links/growth_stratos.go
++++ b/links/growth_stratos.go
+@@ -10,7 +10,6 @@ import (
+ // stratos подписан на шине и кладёт предложение в цепочку прецедентов.
+ // Связь — через EventBus (тема Suggestion).
+ func ConnectGrowthStratos(g *growth.Module, s *stratos.Module, bus core.EventBus) {
+-	_ = g
+-	_ = s
+-	_ = bus
++	g.SetBus(bus)
++	s.SetBus(bus)
+ }
+diff --git a/links/polygon_front.go b/links/polygon_front.go
+index 06c359b..ceef2e5 100644
+--- a/links/polygon_front.go
++++ b/links/polygon_front.go
+@@ -10,7 +10,9 @@ import (
+ // front подписан на шине и применяет правило рефлексом. Отдельного канала
+ // не нужно: связь реализуется через EventBus (тема Antibody).
+ func ConnectPolygonFront(p *polygon.Module, f *front.Module, bus core.EventBus) {
+-	_ = p
+-	_ = f
+-	_ = bus
++	// Заглушка опасна: она обещает связь, которой нет. Мостик обязан
++	// отдать модулям одну и ту же шину, иначе подписка и публикация
++	// окажутся в разных мирах.
++	p.SetBus(bus)
++	f.SetBus(bus)
+ }
+diff --git a/links/polygon_growth.go b/links/polygon_growth.go
+index be00d06..a931ce6 100644
+--- a/links/polygon_growth.go
++++ b/links/polygon_growth.go
+@@ -9,7 +9,6 @@ import (
+ // ConnectPolygonGrowth — мостик polygon ↔ growth: polygon публикует Diagnosis,
+ // growth подписан на шине и ловит излишки. Связь — через EventBus (тема Diagnosis).
+ func ConnectPolygonGrowth(p *polygon.Module, g *growth.Module, bus core.EventBus) {
+-	_ = p
+-	_ = g
+-	_ = bus
++	p.SetBus(bus)
++	g.SetBus(bus)
+ }
+diff --git a/links/stratos_all.go b/links/stratos_all.go
+index a4b0846..328d36e 100644
+--- a/links/stratos_all.go
++++ b/links/stratos_all.go
+@@ -9,6 +9,5 @@ import (
+ // Diagnosis, Suggestion и FlightEvent и пишет прецеденты; остальные слои
+ // читают через stratos.Recall. Связь — через EventBus и прямой Recall.
+ func ConnectStratosAll(s *stratos.Module, bus core.EventBus) {
+-	_ = s
+-	_ = bus
++	s.SetBus(bus)
+ }
+diff --git a/main.go b/main.go
+index d5e3782..77b203b 100644
+--- a/main.go
++++ b/main.go
+@@ -67,15 +67,20 @@ func main() {
+ 	links.ConnectProjectorGraph(proj, bom)
+ 	links.ConnectProjectorBIM(proj, b)
+ 
+-	// 7. Реестр.
++	// 7. Реестр. Шина создаётся ДО реестра и отдаётся ему: иначе StartAll
++	// раздаст модулям собственные шины (core/registry.go:63), а мостики ниже
++	// останутся с шиной, о которой модули не знают.
++	eventBus := core.NewEventBus()
+ 	reg := core.NewRegistry()
++	if setter, ok := reg.(interface{ SetBus(core.EventBus) }); ok {
++		setter.SetBus(eventBus)
++	}
+ 	_ = reg.Register(frontMod, core.Manifest{Name: "front", Role: core.RoleReflex, Layer: core.LayerFront, Enabled: true})
+ 	_ = reg.Register(polygonMod, core.Manifest{Name: "polygon", Role: core.RoleImmunity, Layer: core.LayerPolygon, Enabled: true})
+ 	_ = reg.Register(growthMod, core.Manifest{Name: "growth", Role: core.RoleGrowth, Layer: core.LayerGrowth, Enabled: true})
+ 	_ = reg.Register(stratosMod, core.Manifest{Name: "stratos", Role: core.RoleMemory, Layer: core.LayerStratos, Enabled: true})
+ 
+ 	// Мостики через общую шину событий.
+-	eventBus := core.NewEventBus()
+ 	links.ConnectPolygonFront(polygonMod, frontMod, eventBus)
+ 	links.ConnectPolygonGrowth(polygonMod, growthMod, eventBus)
+ 	links.ConnectGrowthStratos(growthMod, stratosMod, eventBus)
+diff --git a/modules/front/module.go b/modules/front/module.go
+index f6fbaab..0f3f993 100644
+--- a/modules/front/module.go
++++ b/modules/front/module.go
+@@ -22,6 +22,9 @@ type Module struct {
+ // New — новый модуль front со своим счётчиком TTS.
+ func New() *Module { return &Module{tts: NewTTS()} }
+ 
++// SetBus — мостик links: модуль работает на общей шине организма.
++func (m *Module) SetBus(b core.EventBus) { m.bus = b }
++
+ // Name — имя модуля в реестре.
+ func (m *Module) Name() string { return "front" }
+ 
+diff --git a/modules/growth/module.go b/modules/growth/module.go
+index af266ba..1ed3d4a 100644
+--- a/modules/growth/module.go
++++ b/modules/growth/module.go
+@@ -24,6 +24,9 @@ type Module struct {
+ // New — новый модуль growth с projector-ом (может быть nil).
+ func New(p *projector.Projector) *Module { return &Module{proj: p} }
+ 
++// SetBus — мостик links: модуль работает на общей шине организма.
++func (m *Module) SetBus(b core.EventBus) { m.bus = b }
++
+ // Name — имя модуля в реестре.
+ func (m *Module) Name() string { return "growth" }
+ 
+diff --git a/modules/polygon/module.go b/modules/polygon/module.go
+index 501029b..f898d3b 100644
+--- a/modules/polygon/module.go
++++ b/modules/polygon/module.go
+@@ -24,6 +24,9 @@ type Module struct {
+ // New — новый модуль polygon.
+ func New() *Module { return &Module{} }
+ 
++// SetBus — мостик links: модуль работает на общей шине организма.
++func (m *Module) SetBus(b core.EventBus) { m.bus = b }
++
+ // Name — имя модуля в реестре.
+ func (m *Module) Name() string { return "polygon" }
+ 
+diff --git a/modules/stratos/module.go b/modules/stratos/module.go
+index e5b2cd8..13e7b79 100644
+--- a/modules/stratos/module.go
++++ b/modules/stratos/module.go
+@@ -20,6 +20,9 @@ type Module struct {
+ // New — новый модуль stratos со своей цепочкой.
+ func New() *Module { return &Module{chain: NewChain()} }
+ 
++// SetBus — мостик links: модуль работает на общей шине организма.
++func (m *Module) SetBus(b core.EventBus) { m.bus = b }
++
+ // Name — имя модуля в реестре.
+ func (m *Module) Name() string { return "stratos" }
+ 

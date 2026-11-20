@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: organism-core
+  labels:
+    app: organism
+spec:
+  serviceName: "organism-headless"
+  replicas: 3
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: organism
+  template:
+    metadata:
+      labels:
+        app: organism
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/prometheus"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: organism
+          image: organism:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+            - name: udp-gateway
+              containerPort: 9000
+              protocol: UDP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - IPC_LOCK
+          resources:
+            requests:
+              cpu: "2"
+              memory: "2Gi"
+            limits:
+              cpu: "4"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /prometheus
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          volumeMounts:
+            - name: stratos-wal
+              mountPath: /var/lib/organism/stratos
+  volumeClaimTemplates:
+    - metadata:
+        name: stratos-wal
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: nvme
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: organism-headless
+spec:
+  clusterIP: None
+  selector:
+    app: organism
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: udp-gateway
+      port: 9000
+      targetPort: 9000
+      protocol: UDP

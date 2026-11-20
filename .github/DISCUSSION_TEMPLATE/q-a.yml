@@ -1,0 +1,20 @@
+title: "🙏 Вопрос: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Задавай вопрос сообществу. Лучший ответ будет помечен принятым — так комната копит знание.
+  - type: textarea
+    id: question
+    attributes:
+      label: Вопрос
+      description: "Что нужно узнать или решить?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Контекст и факт
+      description: "Что уже попробовал, что наблюдалось по факту (логи, поведение, условия)? КОН 2 — факт, не суждение."
+    validations:
+      required: false

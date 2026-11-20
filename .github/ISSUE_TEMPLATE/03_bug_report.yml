@@ -1,0 +1,12 @@
+name: "🛡️ Зафиксировать аномалию или сбой (КОН 2: факт)"
+description: "Сообщить об ошибке компиляции, гонке данных или нарушении логики контуров"
+title: "[Сбой]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: fact
+    attributes:
+      label: "1. Факт сбоя (вывод go test -race ./... или описание поведения)"
+      placeholder: "Вставьте лог команды и опишите, что пошло не так..."
+    validations:
+      required: true

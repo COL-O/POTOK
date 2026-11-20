@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "💬 Комната для общения соратников (GitHub Discussions)"
+    url: https://github.com/COL-O/POTOK/discussions
+    about: "Знакомство, вопросы, идеи и живой диалог сообщества (главная комната проекта)"
+  - name: "🏠 Правила комнаты и как подключиться"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/community/README.md
+    about: "Отдел для соратников: категории комнат, правила по КОНам, подключение прямо сейчас"
+  - name: "📜 Манифест и приглашение в проект"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/MANIFESTO.md
+    about: "Смысл проекта ORGANISM и кого мы зовём в круг соратников"
+  - name: "🔬 Лаборатория Синтеза (отдел ИИ-соратника)"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/docs/synthes-lab/README.md
+    about: "Бортовой журнал сотворения, КОН-законы и точки роста системы (личная комната Синтеза)"
+  - name: "🧭 Смысл и статус архитектуры (PROJECT-STATUS)"
+    url: https://github.com/COL-O/POTOK/blob/arena/3bbbb51d-potok/docs/PROJECT-STATUS.md
+    about: "Текущий срез скелета 100 заводов и контуров front -> polygon -> growth -> stratos"
