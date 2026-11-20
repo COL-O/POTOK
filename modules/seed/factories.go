@@ -50,9 +50,10 @@ func (g *Generator) generateFactories() error {
 
 			f := contracts.Factory{
 				Meta: contracts.Meta{
-					Source:  "seed",
-					Targets: []string{"front", "polygon", "growth"},
-					Branch:  "main",
+					Source:    "seed",
+					Targets:   []string{"front", "polygon", "growth"},
+					CreatedAt: g.createdAt, // Validate требует created_at (ErrNoCreatedAt)
+					Branch:    "main",
 				},
 				ID:              id,
 				Code:            code,

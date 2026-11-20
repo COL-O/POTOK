@@ -22,6 +22,9 @@ type Module struct {
 // New — новый модуль front со своим счётчиком TTS.
 func New() *Module { return &Module{tts: NewTTS()} }
 
+// SetBus — мостик links: модуль работает на общей шине организма.
+func (m *Module) SetBus(b core.EventBus) { m.bus = b }
+
 // Name — имя модуля в реестре.
 func (m *Module) Name() string { return "front" }
 

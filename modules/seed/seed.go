@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"organism/contracts"
 	"organism/core"
@@ -77,6 +78,10 @@ type Generator struct {
 
 	parentToChildren map[uint32][]uint32
 	generated        bool
+
+	// createdAt — единая метка времени мира: мир генерируется одним актом,
+	// и все сущности должны иметь created_at (иначе Meta.Validate отвергает их).
+	createdAt time.Time
 }
 
 // NewGenerator — генератор с конфигом.
@@ -86,6 +91,7 @@ func NewGenerator(cfg Config) *Generator {
 		rng:              rand.New(rand.NewSource(cfg.Seed)),
 		intern:           contracts.NewInternDictionary(),
 		parentToChildren: make(map[uint32][]uint32),
+		createdAt:        time.Now().UTC(),
 	}
 }
 

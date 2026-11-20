@@ -308,7 +308,11 @@ func (r *Router) evaluateQuarantineShadow(view bus.TickView, activeVerdict bus.V
 			diff += bits.OnesCount64(view.HDC.Words[w] ^ cand.Pattern.Words[w])
 		}
 		sim := 1.0 - (float32(diff) / totalBits)
-		if sim >= cand.MinSim && sim > activeVerdict.Confidence {
+		// Кварантин — это «похоже на опасный класс, даже если активный ответ уверен».
+		// Строгое `>` отказывало в кварантине при РАВНОЙ уверенности: нулевой кадр
+		// совпадает с нулевым шаблоном на 1.0, активный вердикт тоже 1.0 — флаг не
+		// ставился (падение TestRouterRoutineVetoAndQuarantine, router_test.go:101).
+		if sim >= cand.MinSim && sim >= activeVerdict.Confidence {
 			r.setFlag(view.Header, bus.FlagInQuarantine)
 			break
 		}

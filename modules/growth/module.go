@@ -24,6 +24,9 @@ type Module struct {
 // New — новый модуль growth с projector-ом (может быть nil).
 func New(p *projector.Projector) *Module { return &Module{proj: p} }
 
+// SetBus — мостик links: модуль работает на общей шине организма.
+func (m *Module) SetBus(b core.EventBus) { m.bus = b }
+
 // Name — имя модуля в реестре.
 func (m *Module) Name() string { return "growth" }
 

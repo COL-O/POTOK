@@ -67,15 +67,20 @@ func main() {
 	links.ConnectProjectorGraph(proj, bom)
 	links.ConnectProjectorBIM(proj, b)
 
-	// 7. Реестр.
+	// 7. Реестр. Шина создаётся ДО реестра и отдаётся ему: иначе StartAll
+	// раздаст модулям собственные шины (core/registry.go:63), а мостики ниже
+	// останутся с шиной, о которой модули не знают.
+	eventBus := core.NewEventBus()
 	reg := core.NewRegistry()
+	if setter, ok := reg.(interface{ SetBus(core.EventBus) }); ok {
+		setter.SetBus(eventBus)
+	}
 	_ = reg.Register(frontMod, core.Manifest{Name: "front", Role: core.RoleReflex, Layer: core.LayerFront, Enabled: true})
 	_ = reg.Register(polygonMod, core.Manifest{Name: "polygon", Role: core.RoleImmunity, Layer: core.LayerPolygon, Enabled: true})
 	_ = reg.Register(growthMod, core.Manifest{Name: "growth", Role: core.RoleGrowth, Layer: core.LayerGrowth, Enabled: true})
 	_ = reg.Register(stratosMod, core.Manifest{Name: "stratos", Role: core.RoleMemory, Layer: core.LayerStratos, Enabled: true})
 
 	// Мостики через общую шину событий.
-	eventBus := core.NewEventBus()
 	links.ConnectPolygonFront(polygonMod, frontMod, eventBus)
 	links.ConnectPolygonGrowth(polygonMod, growthMod, eventBus)
 	links.ConnectGrowthStratos(growthMod, stratosMod, eventBus)

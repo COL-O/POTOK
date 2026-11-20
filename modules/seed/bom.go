@@ -52,7 +52,7 @@ func (g *Generator) linkLayers(parents, children []contracts.Product, rawDirect 
 				transit = int32(3600 + g.rng.Intn(86400))
 			}
 			edge := contracts.BOMEdge{
-				Meta:       contracts.Meta{Source: "seed", Targets: []string{"graph", "projector"}, Branch: "main"},
+				Meta:       contracts.Meta{Source: "seed", CreatedAt: g.createdAt, Targets: []string{"graph", "projector"}, Branch: "main"},
 				ParentID:   parent.ID,
 				ChildID:    child.ID,
 				FactoryID:  fid,
