@@ -45,9 +45,11 @@ def gh(args: list[str]) -> str:
 
 
 def item_for(issue: int) -> str | None:
-    out = gh(["api", "graphql", "-f",
-              f'query={{user(login:"{OWNER}"){{projectV2(number:{PROJECT_NUMBER})'
-              '{items(first:100){nodes{id content{... on Issue{number}}}}}}}}}'])
+    query = (
+        '{user(login:"' + OWNER + '"){projectV2(number:' + str(PROJECT_NUMBER) + '){'
+        'items(first:100){nodes{id content{... on Issue{number}}}}}}}'
+    )
+    out = gh(["api", "graphql", "-f", "query=" + query])
     data = json.loads(out)["data"]["user"]["projectV2"]["items"]["nodes"]
     for node in data:
         if (node.get("content") or {}).get("number") == issue:
@@ -90,7 +92,7 @@ def main() -> int:
                 print(f"{f.name}: карточки задачи #{issue} на доске нет — заявка оставлена")
                 continue
             gh(["api", "graphql", "-f",
-                "mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){updateProjectV2ItemFieldValue("
+                "query=mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){updateProjectV2ItemFieldValue("
                 "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}})"
                 "{projectV2Item{id}}}",
                 "-f", f"p={PROJECT_ID}", "-f", f"i={item}", "-f", f"f={STATUS_FIELD}",
