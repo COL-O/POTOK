@@ -1,0 +1,16 @@
+# Черновик real-time pipeline для society_events (OpenObserve, VRL).
+# НЕ прогонялся на живой O2. Применяет смотритель в Pipelines после сверки.
+# Задача: на входе события привести к snake_case, пометить wake_needed при критичности.
+
+# 1) Нормализация критичности (поле может прийти в любом регистре)
+.severity = coalesce(string(.severity), "info")
+.severity_lc = downcase(.severity)
+
+# 2) wake_needed: сейчас true только на error/critical. Расширяется таблицей/порогами позже.
+.wake_needed = .severity_lc == "error" || .severity_lc == "critical"
+
+# 3) Провенанс по умолчанию — reported (иначе фабрикация "verified")
+.provenance = coalesce(string(.provenance), "reported")
+
+# 4) Лишние поля не режем молча; неизвестный тип события пропускаем дальше.
+.

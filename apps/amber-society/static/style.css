@@ -136,3 +136,13 @@ table.mini th { color: var(--muted); font-weight: 600; }
   display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
   padding: .8rem 1.4rem; border-top: 1px solid #2e2618; color: var(--text); font-size: .78rem;
 }
+
+/* ---------- O2-контур ---------- */
+.o2-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: .8rem; margin-top: .8rem; }
+.o2-item { background: var(--panel); border: 1px solid #2e2618; border-left: 4px solid var(--muted); border-radius: 12px; padding: .55rem .7rem; }
+.o2-item.s-ok { border-left-color: var(--ok); }
+.o2-item.s-cond { border-left-color: var(--warn); }
+.o2-item.s-no { border-left-color: var(--bad); }
+.o2-item .badge2 { font-size: .95rem; margin-right: .35rem; }
+.o2-item h4 { margin: 0 0 .15rem; font-size: .88rem; color: var(--text); }
+.o2-item p { margin: 0; font-size: .76rem; color: var(--muted); }

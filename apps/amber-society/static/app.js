@@ -270,3 +270,44 @@ el('deptFilter').addEventListener('input', (e) => {
     card.classList.toggle('hidden', q && !card.dataset.search.includes(q));
   });
 });
+
+/* ---------- O2-контур (сверка с openobserve.ai, 2026-11-22; на живом O2 не проверялось) ---------- */
+const O2_ITEMS = [
+  { s: 'ok', t: 'JSON ingest · POST /api/default/<stream>/_json', d: 'Штатный вход для скриптов, резидентов и резидентных отчётов.' },
+  { s: 'ok', t: 'Потоки создаются при первом событии', d: 'society_events / society_roster / ai_consensus / system_docs — создавать заранее не нужно.' },
+  { s: 'ok', t: 'OTLP · /api/default/v1/traces|metrics|logs', d: 'Стандартный канал для Python-скриптов и llama-server; коллектор не обязателен; trailing slash нельзя.' },
+  { s: 'ok', t: 'VRL Pipelines (real-time)', d: 'Трансформация на приёме на скорости Rust: snake_case, признак wake_needed; без выделения ОЗУ.' },
+  { s: 'ok', t: 'Enrichment Tables (CSV)', d: 'Pipelines > Enrichment Tables; lookup функцией get_enrichment_table_record() в VRL; для SQL-джойна префикс enrich.' },
+  { s: 'cond', t: 'Remote Tasks · /api/{org}/tasks', d: 'Существует, но это задача оценки экспериментов: синхронный HTTP, Timeout ≤ 600 с (по умолч. 60), до 3 попыток, HMAC-SHA256 в x-o2-signature. Enterprise + O2_EVAL_ENABLED. НЕ асинхронный мост в Colab через Google Диск.' },
+  { s: 'cond', t: 'Providers (Settings) · до 7 типов', d: 'В т. ч. openai_compatible; endpoint + модели + ключ. Ваш lfm2.5-350m-local (:8088) сюда; виден только если AI suite включён (редакция/флаги).' },
+  { s: 'cond', t: 'Playground', d: 'Варианты × кейсы; temperature/max_tokens/tool calling; volatile (ничего не сохраняет); promote в Dataset/Experiment. Enterprise.' },
+  { s: 'cond', t: 'Prompts · реестр с версиями и метками', d: 'v1/v2, label «production» указывает на нужную версию; RBAC; трафик считается по трейсам. Enterprise.' },
+  { s: 'cond', t: 'Datasets / Experiments', d: 'Версионируемые кейсы (input/expected_output), pinned snapshot, baseline-сравнение, стоимость считается и подтверждается. Enterprise.' },
+  { s: 'cond', t: 'CSV-загрузка файлов из браузера', d: 'Для enrichment tables подтверждена; для произвольных потоков — только в вашем UI проверить.' },
+  { s: 'no', t: 'Remote Task → ноутбук → Диск → Colab как «мост»', d: 'Не сходится: Remote Task — синхронный HTTP ≤ 600 с, контур через Drive асинхронен (минуты). Пути: SDK task (ваш процесс репортит результат) или вердикт напрямую в поток ai_consensus.' },
+  { s: 'no', t: 'Агрегации (GROUP BY) внутри VRL', d: 'VRL — per-event трансформация; сводки — SQL, reports, scheduled pipeline. Выдумать синтаксис нельзя.' },
+  { s: 'no', t: '«Длинные логи до 256K контекста»', d: 'Нет ни у одной модели room_resident: SmolLM2-360M 8K, Qwen2.5-0.5B 32K, Gemma-3-270M 32K, LFM2.5-350M 32K (HF).' },
+  { s: 'no', t: 'Серверные бинарники O2 в релизах GitHub', d: 'В релизе v1.2.0-rc2 — только openapi.json; поставка: Docker / Cloud / Enterprise. В эту песочницу O2 поставить нельзя (docker нет, Rust-тулчейн вне доступа).' },
+];
+const O2_VERDICT = [
+  'Remote Tasks — инструмент оценки экспериментов, а не нервная система и не «главный мост» к Colab; для 7B-контура — SDK task или поток ai_consensus.',
+  'Имена и лимиты в документе в целом верны; смысл искажён: O2 — это телеметрия и оценка, а не исполнитель задач.',
+  'Всё AI-бюджетное (Providers/Playground/Prompts/Datasets/Experiments) — Enterprise / Cloud с флагом O2_EVAL_ENABLED; наличие на вашем v1.1.2 устанавливает только смотритель.',
+  'Всё, что я «поставил в проект», — черновики в o2/amber-society/ и эта вкладка; живые машины не трогал.',
+];
+const O2_STATUS = { ok: '✅', cond: '◐', no: '✖' };
+const o2Grid = el('o2Grid');
+if (o2Grid) {
+  O2_ITEMS.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'o2-item s-' + item.s;
+    const h = document.createElement('h4');
+    const badge = document.createElement('span'); badge.className = 'badge2'; badge.textContent = O2_STATUS[item.s];
+    h.append(badge, document.createTextNode(item.t));
+    const p = document.createElement('p'); p.textContent = item.d;
+    card.append(h, p);
+    o2Grid.appendChild(card);
+  });
+  const verdict = el('o2Verdict');
+  O2_VERDICT.forEach((line) => { const li = document.createElement('li'); li.textContent = line; verdict.appendChild(li); });
+}

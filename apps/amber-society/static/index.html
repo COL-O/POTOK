@@ -22,6 +22,7 @@
     <button class="tab is-active" data-tab="home" role="tab">Вход</button>
     <button class="tab" data-tab="chat" role="tab">Чат круга <span class="dot" id="onlineDot" title="поток сообщений"></span></button>
     <button class="tab" data-tab="dash" role="tab">Дашборды</button>
+    <button class="tab" data-tab="o2" role="tab">O2-контур</button>
     <button class="tab" data-tab="depts" role="tab">Отделы</button>
     <button class="tab" data-tab="charter" role="tab">Устав</button>
   </nav>
@@ -147,6 +148,18 @@
       <div class="src">docs/amber-society/passport.md §2 (со слов Создателя).</div>
     </div>
 
+  </div>
+</section>
+
+<!-- ============ O2-КОНТУР ============ -->
+<section class="panel" id="panel-o2" role="tabpanel">
+  <h2 class="section-title">O2-контур: что OpenObserve умеет на самом деле <span class="muted small">· сверено с openobserve.ai 2026-11-22</span></h2>
+  <p class="muted small">Статусы честные: <span class="ok">✅</span> подтверждается документацией и API · <span class="warn">◐</span> существует с условиями (редакция / флаги) · <span class="no">✖</span> нет или не сходится. На вашем живом O2 v1.1.2 ничего не проверялось — доступность устанавливает только смотритель.</p>
+  <div class="o2-grid" id="o2Grid"></div>
+  <div class="card" style="margin-top:1rem">
+    <h3>Главное из осмотра «отдела ИИ, Remote Tasks и Данных»</h3>
+    <ul class="plain" id="o2Verdict"></ul>
+    <div class="src">Полная сверка и ссылки: <code>o2/amber-society/README.md</code> (таблица) и <code>o2/amber-society/remote-task.md</code> (Remote Tasks). Источники: openobserve.ai/docs (llm-experiments, llm-playground, llm-prompts, enrichment-tables, opentelemetry) · GitHub PR openobserve-docs #631 · релиз v1.2.0-rc2 (только openapi.json) · o2/README.md (v1.1.2 на дом смотрителя).</div>
   </div>
 </section>
 
