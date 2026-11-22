@@ -13,7 +13,10 @@
 
 - `docker` / `podman` отсутствуют;
 - в релизах GitHub (v1.2.0-rc2, `gh api repos/openobserve/openobserve/releases/latest`, 2026-11-22)
-  **нет серверного бинарника** — только `openapi.json`; распространение идёт через Docker-образы / Cloud / Enterprise;
+  **нет серверного бинарника** — только `openapi.json`; официальные бинарники лежат на
+  openobserve.ai/downloads, но **весь хост openobserve.ai из песочницы закрыт** (проверено:
+  `curl https://openobserve.ai/downloads/` → `http 000`); распространение идёт также через
+  Docker-образы ECR/o2cr.ai (docker отсутствует) и Cloud/Enterprise;
 - сборка из исходников (`codeload.github.com/openobserve/openobserve`) потребовала бы Rust-тулчейн
   и часы компиляции — и дала бы пустышку без данных, рядом с вашим настоящим O2, а не «ваш» O2.
 

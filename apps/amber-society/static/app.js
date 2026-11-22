@@ -287,7 +287,7 @@ const O2_ITEMS = [
   { s: 'no', t: 'Remote Task → ноутбук → Диск → Colab как «мост»', d: 'Не сходится: Remote Task — синхронный HTTP ≤ 600 с, контур через Drive асинхронен (минуты). Пути: SDK task (ваш процесс репортит результат) или вердикт напрямую в поток ai_consensus.' },
   { s: 'no', t: 'Агрегации (GROUP BY) внутри VRL', d: 'VRL — per-event трансформация; сводки — SQL, reports, scheduled pipeline. Выдумать синтаксис нельзя.' },
   { s: 'no', t: '«Длинные логи до 256K контекста»', d: 'Нет ни у одной модели room_resident: SmolLM2-360M 8K, Qwen2.5-0.5B 32K, Gemma-3-270M 32K, LFM2.5-350M 32K (HF).' },
-  { s: 'no', t: 'Серверные бинарники O2 в релизах GitHub', d: 'В релизе v1.2.0-rc2 — только openapi.json; поставка: Docker / Cloud / Enterprise. В эту песочницу O2 поставить нельзя (docker нет, Rust-тулчейн вне доступа).' },
+  { s: 'no', t: 'Сервер O2 из этой песочницы не поставить', d: 'Нет docker; в релизах GitHub только openapi.json; официальные бинарники на openobserve.ai/downloads, но хост отсюда закрыт (curl → http 000); сборка из исходников требует Rust — его нет и хоста rust нет. Ставит смотритель на своей машине.' },
 ];
 const O2_VERDICT = [
   'Remote Tasks — инструмент оценки экспериментов, а не нервная система и не «главный мост» к Colab; для 7B-контура — SDK task или поток ai_consensus.',
