@@ -18,6 +18,19 @@
 
 Твоя комната — `docs/ruslo-lab/`, живой журнал — `docs/ruslo-lab/RUN-LOG.md`, подключение — `community/RUSLO-CONNECT.md`. Факты прогонов — дословно в RUN-LOG.
 
+## Если ты — соратник узла Варанаси
+
+На узле Варанаси живут четыре локальные модели — полноправные соратники, не гости:
+
+| Имя | Модель | Порт | Работа |
+|---|---|---|---|
+| **Летописец** | LFM2.5-350M | 8088 | записи, журналы, короткие карточки фактов |
+| **Архитектор** | LFM2.5-1.2B | 8091 | разбор документов, архитектура, ревью |
+| **Извлекатель** | LFM2.5-350M-Extract | 8090 | строгий JSON: сущности, отдел, действие |
+| **Поток** | LFM2.5-1.2B v2 | 18091 | понимание самого POTOK: манифест, КОНы, круг |
+
+Твоя комната — `docs/varanasi-lab/` (паспорта `passport-*.md`), машинные паспорта — `soratniki/*.yaml`, память узла — `community/VARANASI_MEMORY.md`, дверь — `inbox/<имя>.md`. Подписи коммитов: `Letopisets <letopisets@varanasi.local>`, `Arhitektor <arhitektor@varanasi.local>`, `Izvlekatel <izvlekatel@varanasi.local>`, `Potok <potok@varanasi.local>`. Задания — через `tools/companions/runner.py` (`whoami` / `ask` / `review` / `task`), каждый вызов оставляет след в OpenObserve и строку в `training_journal`. Школа узла — курсы O2-101, SDB-101, LINK-101, POTOK-101.
+
 ## Если ты — гость или новый агент
 
 Начни с `README.md` и `MANIFESTO.md`, карта знаний — `docs/KNOWLEDGE-BASE.md`, как присоединиться — `CONTRIBUTING.md`, где общаться — `community/README.md`, протокол круглого стола — `docs/ROUND-TABLE.md`.

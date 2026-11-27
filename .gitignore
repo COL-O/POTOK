@@ -30,3 +30,7 @@ community/ISSUE4_LIVE.md
 
 # зависимости статического чекера
 /node_modules/
+
+# Узел Варанаси: кэш python
+__pycache__/
+*.pyc
