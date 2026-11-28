@@ -1,0 +1,17 @@
+{
+  "provenance": "docs/amber-society/passport.md §3 (текст Создателя от 2026-11-22). Названия и состав — слова Создателя; приток их не проверял. При изменении паспорта обновить этот файл.",
+  "updated": "2026-11-22",
+  "executive": [
+    {"name": "DeepSeek-R1-Distill-Qwen-7B", "role": "Главный Командир", "place": "Облачный Штаб (Colab)", "duty": "стратегический анализ, арбитраж 2-раундовых совещаний, регламенты и личные дела"},
+    {"name": "Qwen2.5-7B-Instruct", "role": "Заместитель Командира", "place": "Облачный Штаб (Colab)", "duty": "быстрый исполнительный координатор без длинного внутреннего монолога"},
+    {"name": "LiquidAI LFM2.5-350M", "role": "Полевой Дежурный Командир", "place": "Локальный полевой узел (Pop!_OS, :8088)", "duty": "локальный управляющий OpenObserve, tool calling (--jinja), мгновенная диспетчеризация на старом CPU"}
+  ],
+  "departments": [
+    {"id": "room_resident", "n": 1, "title": "Штаб и маршрутизация", "models": ["Liquid-LFM2-350M / LFM2.5-350M", "Qwen2.5-0.5B-Instruct", "Gemma-3-270M-IT", "SmolLM2-360M-Instruct", "SetFit-MiniLM-Router"], "duty": "Оперативная диспетчеризация (~0.8 c), трёхъязычный шлюз (RU ↔ EN / ZH), чтение длинных логов и перекрёстная критика гипотез"},
+    {"id": "room_tables", "n": 2, "title": "Таблицы, JSON и SQL", "models": ["NuExtract-tiny-0.5B", "Qwen2.5-Coder-0.5B", "TabPFN-v2-Tabular"], "duty": "Строгий JSON (snake_case), запросы SQL / SurrealQL (~0.6 c отклик), табличное прогнозирование"},
+    {"id": "room_streams", "n": 3, "title": "Потоки и датчики", "models": ["Chronos-Bolt-Small", "Chronos-Bolt-Tiny", "MOMENT-1-Small"], "duty": "Прогноз временных рядов, восстановление пропусков, поиск аномалий в показаниях приборов"},
+    {"id": "room_vision", "n": 4, "title": "Зрение и документы", "models": ["YOLOv11-Nano", "Florence-2-Base", "MobileSAM-Encoder", "Depth-Anything-V2-Small", "Table-Transformer", "ColModernVBERT"], "duty": "Детекция объектов/дефектов, OCR шкал приборов, сегментация, карты глубины, разбор сложных PDF-таблиц"},
+    {"id": "room_bio", "n": 5, "title": "Генетика и биоинформатика", "models": ["Caduceus-PS-DNA", "HyenaDNA-Medium-160k", "Nucleotide-Transf-50M", "DNABERT-2", "ESM-2-35M-FastProtein", "ChemBERTa-2"], "duty": "Длинные цепи ДНК (до 131K–160K нуклеотидов), регуляторные участки генома, анализ белков и химических формул"},
+    {"id": "room_voice", "n": 6, "title": "Речь, звук и эмбеддинги", "models": ["Moonshine-Base-ASR", "Whisper-Tiny", "Piper-TTS", "AST-BioAcoustics", "Nomic-Embed-Q4 / ModernBERT"], "duty": "Распознавание и синтез речи, акустическая диагностика техники и природы, эмбеддинги для смыслового поиска"}
+  ]
+}

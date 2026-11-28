@@ -1,0 +1,11 @@
+# Черновик: пример VRL-фильтра пайплайна, который отдаёт в поток ai_alerts
+# только то, на что действительно нужно будить резидента/Командира.
+# НЕ прогонялся на живой O2.
+
+.severity_lc = downcase(coalesce(string(.severity), "info"))
+.wake_needed = .severity_lc == "error" || .severity_lc == "critical"
+.keep = .wake_needed == true || .action == "decision"
+
+# В OpenObserve реальный отбор делается шагом пайплайна (Drop/Filter) по полю keep —
+# сам VRL только выставляет признаки, удаление сообщения — дело конфигурации пайплайна.
+.

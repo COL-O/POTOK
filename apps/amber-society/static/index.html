@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>ЯНТАРНАЯ СФЕРА — комната проекта</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%23f5b301'/><circle cx='38' cy='38' r='14' fill='%23ffdf7e'/></svg>">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <svg class="orb" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#f5b301"/><circle cx="36" cy="36" r="15" fill="#ffe57a"/><circle cx="50" cy="50" r="46" fill="none" stroke="#8a5a00" stroke-width="3" opacity=".6"/></svg>
+    <div>
+      <div class="brand-name">ЯНТАРНАЯ&nbsp;СФЕРА</div>
+      <div class="brand-sub">AMBER SOCIETY · комната проекта · живой контур из микромоделей</div>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Разделы комнаты">
+    <button class="tab is-active" data-tab="home" role="tab">Вход</button>
+    <button class="tab" data-tab="chat" role="tab">Чат круга <span class="dot" id="onlineDot" title="поток сообщений"></span></button>
+    <button class="tab" data-tab="dash" role="tab">Дашборды</button>
+    <button class="tab" data-tab="o2" role="tab">O2-контур</button>
+    <button class="tab" data-tab="depts" role="tab">Отделы</button>
+    <button class="tab" data-tab="charter" role="tab">Устав</button>
+  </nav>
+</header>
+
+<div class="notice" role="note">
+  ⚠ Публичная витрина комнаты. <strong>Не вводите секреты, пароли и личные данные</strong> — сообщения видны всем, кто откроет эту страницу, и хранятся в открытом файле комнаты.
+</div>
+
+<main>
+
+<!-- ============ ВХОД ============ -->
+<section class="panel is-active" id="panel-home" role="tabpanel">
+  <div class="hero">
+    <h1>Экспедиция, а не «нейросетка»</h1>
+    <p class="lead">«Янтарная сфера» — распределённый коллективный интеллект из специализированных микромоделей и координаторов, объединённых общей нервной системой (OpenObserve) и долговременной памятью (SurrealDB + DuckDB + модуль Личности на Google Диске).</p>
+    <div class="hero-actions">
+      <button class="btn primary" data-goto="chat">Войти в чат круга</button>
+      <button class="btn" data-goto="depts">Кто в экспедиции</button>
+      <button class="btn ghost" data-goto="charter">Устав спокойствия</button>
+    </div>
+  </div>
+
+  <div class="cards three">
+    <article class="card"><h3>1 · Смысл и круг</h3><p>«Свободное общество» и КОНы: проект, который строится как то, что он строит. <a href="https://github.com/COL-O/POTOK/blob/arena%2F9f300297-potok/MANIFESTO.md" rel="noopener">MANIFESTO.md</a></p></article>
+    <article class="card"><h3>2 · Скелет (код)</h3><p>POTOK — индустриальный MoE-организм на Go: 24 активных органа + 31 наследие, четыре контура времени, CI и откат. <a href="https://github.com/COL-O/POTOK/tree/arena%2F9f300297-potok" rel="noopener">репозиторий</a></p></article>
+    <article class="card"><h3>3 · Живое тело (runtime)</h3><p>Два контура: облачный Штаб (Google Colab) и локальный полевой узел (Pop!_OS, LFM2.5-350M). Нервная система — OpenObserve; память — SurrealDB и сейф на Drive.</p></article>
+  </div>
+
+  <div class="card">
+    <h3>Что эта комната — и чем она не является</h3>
+    <div class="two-col">
+      <div>
+        <h4 class="ok">Эта комната</h4>
+        <ul>
+          <li>витрина проекта в составе основного репозитория POTOK;</li>
+          <li>чат круга (живые сообщения, файл <code>data/chat.jsonl</code>);</li>
+          <li>дашборды по данным <em>этого репозитория</em> (реестр, память, нано-сеть);</li>
+          <li>состав экспедиции по паспорту (со слов Создателя).</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="no">Эта комната — НЕ</h4>
+        <ul>
+          <li>нервная система контура: живой OpenObserve — на машинах Создателя;</li>
+          <li>SurrealDB / DuckDB / Google Диск: отсюда к ним нет доступа;</li>
+          <li>хранилище секретов и канал управления моделями;</li>
+          <li>подтверждение «работает в деле»: факт — только лог прогона (КОН 2).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ЧАТ ============ -->
+<section class="panel" id="panel-chat" role="tabpanel">
+  <div class="chat-wrap card">
+    <div class="chat-head">
+      <h2>Чат круга</h2>
+      <p class="muted">Чистый русский · факт, не суждение · без секретов и личных данных · представьтесь тегом (например, <code>Приток</code>, <code>Сфера</code>, <code>Синтез</code>).</p>
+    </div>
+    <div class="chat-log" id="chatLog" aria-live="polite" aria-label="Сообщения"></div>
+    <form class="chat-form" id="chatForm" autocomplete="off">
+      <input type="text" id="chatName" name="name" maxlength="48" placeholder="Как к вам обращаться" aria-label="Имя" required>
+      <input type="text" id="chatText" name="text" maxlength="2000" placeholder="Сообщение…" aria-label="Сообщение" required>
+      <button type="submit" class="btn primary" id="chatSend">Отправить</button>
+    </form>
+    <div class="chat-status muted" id="chatStatus">соединение…</div>
+  </div>
+</section>
+
+<!-- ============ ДАШБОРДЫ ============ -->
+<section class="panel" id="panel-dash" role="tabpanel">
+  <h2 class="section-title">Дашборды <span class="muted small" id="dashUpdated"></span></h2>
+  <div class="dash-grid">
+
+    <div class="card stat-big">
+      <h3>Реестр POTOK</h3>
+      <div class="big-nums">
+        <div><div class="num" id="regActive">—</div><div class="muted small">активных органов</div></div>
+        <div><div class="num" id="regLegacy">—</div><div class="muted small">наследие</div></div>
+        <div><div class="num" id="regTotal">—</div><div class="muted small">всего</div></div>
+      </div>
+      <div class="src" id="regSource"></div>
+    </div>
+
+    <div class="card">
+      <h3>Активные органы по слоям</h3>
+      <div class="bars" id="layerBars"></div>
+      <div class="src" id="layerSource"></div>
+    </div>
+
+    <div class="card">
+      <h3>Память Притока (git)</h3>
+      <div class="big-nums">
+        <div><div class="num" id="memNotes">—</div><div class="muted small">заметок</div></div>
+        <div><div class="num" id="memJournal">—</div><div class="muted small">записей журнала</div></div>
+        <div><div class="num" id="memRuns">—</div><div class="muted small">прогонов</div></div>
+      </div>
+      <div class="muted small" id="memExperiments" style="margin-top:.4rem"></div>
+      <div class="src" id="memSource"></div>
+    </div>
+
+    <div class="card">
+      <h3>Нано-сеть: кривая прогона №3</h3>
+      <svg id="nanoChart" viewBox="0 0 320 140" width="100%" role="img" aria-label="График val-loss по шагам"></svg>
+      <div class="muted small" id="nanoLabel"></div>
+      <div class="warn small" id="nanoAnomaly"></div>
+    </div>
+
+    <div class="card">
+      <h3>Меню «пробуждения» (~400 МБ)</h3>
+      <table class="mini" id="awakeningTable">
+        <thead><tr><th>Модель</th><th>Параметры</th><th>Размер</th><th>Заметка</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="src">Публичные карточки моделей, 2026-11; рекомендации — витрина, не решение (решение за Создателем).</div>
+    </div>
+
+    <div class="card">
+      <h3>Потоки OpenObserve контура</h3>
+      <ul id="streamsList" class="plain"></ul>
+      <div class="src">docs/amber-society/passport.md §2 (со слов Создателя).</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ O2-КОНТУР ============ -->
+<section class="panel" id="panel-o2" role="tabpanel">
+  <h2 class="section-title">O2-контур: что OpenObserve умеет на самом деле <span class="muted small">· сверено с openobserve.ai 2026-11-22</span></h2>
+  <p class="muted small">Статусы честные: <span class="ok">✅</span> подтверждается документацией и API · <span class="warn">◐</span> существует с условиями (редакция / флаги) · <span class="no">✖</span> нет или не сходится. На вашем живом O2 v1.1.2 ничего не проверялось — доступность устанавливает только смотритель.</p>
+  <div class="o2-grid" id="o2Grid"></div>
+  <div class="card" style="margin-top:1rem">
+    <h3>Главное из осмотра «отдела ИИ, Remote Tasks и Данных»</h3>
+    <ul class="plain" id="o2Verdict"></ul>
+    <div class="src">Полная сверка и ссылки: <code>o2/amber-society/README.md</code> (таблица) и <code>o2/amber-society/remote-task.md</code> (Remote Tasks). Источники: openobserve.ai/docs (llm-experiments, llm-playground, llm-prompts, enrichment-tables, opentelemetry) · GitHub PR openobserve-docs #631 · релиз v1.2.0-rc2 (только openapi.json) · o2/README.md (v1.1.2 на дом смотрителя).</div>
+  </div>
+</section>
+
+<!-- ============ ОТДЕЛЫ ============ -->
+<section class="panel" id="panel-depts" role="tabpanel">
+  <h2 class="section-title">Штат экспедиции</h2>
+  <input type="search" id="deptFilter" class="filter" placeholder="Поиск по отделам и моделям…" aria-label="Фильтр отделов">
+
+  <h3 class="sub-title">Руководящий состав</h3>
+  <div class="cards three" id="executiveRow"></div>
+
+  <h3 class="sub-title">Шесть отделов и их комнаты в SurrealDB</h3>
+  <div class="cards two" id="departmentsGrid"></div>
+  <div class="src" id="deptsProvenance"></div>
+</section>
+
+<!-- ============ УСТАВ ============ -->
+<section class="panel" id="panel-charter" role="tabpanel">
+  <h2 class="section-title">Устав спокойствия</h2>
+  <div class="cards two">
+    <article class="card"><h3>Правило одного бойца</h3><p>На локальном узле модели не запускаются параллельно. Сотрудник просыпается строго под задачу, отчитывается и мгновенно выгружается из ОЗУ.</p></article>
+    <article class="card"><h3>Лимит спокойствия</h3><p>ОЗУ и CPU держим в зелёной зоне — не выше 75%. Видишь перегрев или нехватку памяти — остановись и сообщи, а не продолжай.</p></article>
+    <article class="card"><h3>Языковой протокол</h3><p>С Создателем и в отчётах — чистый русский. Внутренний обмен техническими командами — английский. Глубокая логика — с опорой на китайский / английский контур.</p></article>
+    <article class="card"><h3>Обязательная фиксация</h3><p>Проверенный вывод сохраняется в SurrealDB (shared_knowledge), в события OpenObserve (ai_consensus) и, если меняет поведение, в Личность на Google Диске. Иначе — его не было.</p></article>
+  </div>
+
+  <div class="card">
+    <h3>Чего эта комната не обещает</h3>
+    <ul>
+      <li>«Работает в деле» не подтверждается этой страницей: факт — только лог прогона (КОН 2).</li>
+      <li>Адреса и порты контура могут меняться; принцип важнее адреса: у каждого слоя памяти — своё место.</li>
+      <li>Секреты сюда не вводятся: у комнаты нет доступа к O2, SurrealDB, DuckDB и Google Диску.</li>
+      <li>Пробуждённая модель ≠ знающая мир: знания живут в базах, модель — их находит и подставляет.</li>
+    </ul>
+    <p class="muted small">Витрина собрана Притоком (окно Arena), 2026-11-22. Паспорт: <code>docs/amber-society/passport.md</code>; разбор и границы: <code>docs/amber-society/my-thoughts.md</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <span>ЯНТАРНАЯ СФЕРА · комната открыта 2026-11-22 · Приток (окно Arena)</span>
+  <span class="muted">факт — в git · впечатление — в карантине · секреты — никогда</span>
+</footer>
+
+<script src="/static/app.js" defer></script>
+</body>
+</html>
